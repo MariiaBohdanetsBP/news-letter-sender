@@ -12,8 +12,8 @@ export function Header({ onSend }: HeaderProps) {
   const { user, isAdmin, logout } = useAuth();
 
   return (
-    <header className="flex h-14 items-center justify-between bg-header px-6">
-      <h1 className="text-lg font-semibold text-white">
+    <header className="flex h-14 items-center justify-between border-b border-border bg-header px-6">
+      <h1 className="text-lg font-semibold text-primary">
         Příjemci newsletterů
       </h1>
 
@@ -31,13 +31,13 @@ export function Header({ onSend }: HeaderProps) {
           </button>
         )}
 
-        <span className="text-sm text-white/70">
+        <span className="text-sm text-text-secondary">
           {user?.displayName}
         </span>
 
         <button
           onClick={logout}
-          className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+          className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm text-text-secondary transition-colors hover:bg-gray-100 hover:text-text-primary"
           title="Odhlásit"
         >
           <LogOut className="h-4 w-4" />
