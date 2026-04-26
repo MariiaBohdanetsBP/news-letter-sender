@@ -20,6 +20,10 @@
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
 }
 
+html {
+  color-scheme: light only;
+}
+
 body {
   background: var(--color-background);
   color: var(--color-text-primary);

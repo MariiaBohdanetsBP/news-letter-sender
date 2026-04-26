@@ -14,6 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>
+      <head>
+        <meta name="color-scheme" content="light only" />
+      </head>
       <body className="flex min-h-full flex-col">
         <AuthProvider>{children}</AuthProvider>
       </body>

@@ -1,0 +1,47 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e9] [cursor=pointer]:
+    - img [ref=e10]
+  - alert [ref=e13]
+  - generic [ref=e28]:
+    - banner [ref=e29]:
+      - heading "Příjemci newsletterů" [level=1] [ref=e30]
+      - generic [ref=e31]:
+        - button "Odeslat" [ref=e32]:
+          - img [ref=e33]
+          - text: Odeslat
+        - generic [ref=e35]: Marketing Admin
+        - button "Odhlásit" [ref=e36]:
+          - img [ref=e37]
+    - generic [ref=e40]:
+      - complementary [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]: Kampaně
+          - button "Nová" [ref=e44]:
+            - img [ref=e45]
+            - text: Nová
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - generic [ref=e48] [cursor=pointer]:
+              - generic [ref=e49]:
+                - generic [ref=e50]: VIP
+                - generic [ref=e51]: "Plán: 15. 5. 2026"
+              - button "Přejmenovat" [ref=e52]:
+                - img [ref=e53]
+            - generic [ref=e56] [cursor=pointer]:
+              - generic [ref=e57]:
+                - generic [ref=e58]: Slevomat
+                - generic [ref=e59]: "Plán: 30. 4. 2026"
+              - button "Přejmenovat" [ref=e60]:
+                - img [ref=e61]
+          - generic [ref=e64]:
+            - button "Historie" [ref=e65]:
+              - img [ref=e66]
+              - text: Historie
+              - img [ref=e70]
+            - button "hello 26. 4. 2026" [ref=e73]:
+              - generic [ref=e74]: hello
+              - generic [ref=e75]: 26. 4. 2026
+      - main [ref=e76]:
+        - generic [ref=e78]:
+          - paragraph [ref=e79]: Vyberte kampaň pro začátek
+          - paragraph [ref=e80]: Vyberte z postranního panelu nebo vytvořte novou

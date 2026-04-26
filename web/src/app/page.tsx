@@ -283,7 +283,7 @@ export default function DashboardPage() {
                 </div>
                 <button
                   onClick={() => setSendConfirmOpen(true)}
-                  className="rounded-md bg-success px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-success/90"
+                  className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
                 >
                   Označit jako odesláno
                 </button>

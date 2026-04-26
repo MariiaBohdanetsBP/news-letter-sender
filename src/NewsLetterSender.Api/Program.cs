@@ -20,7 +20,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 // Infrastructure (EF Core + repos)
 var connectionString = builder.Configuration.GetConnectionString("Default")
     ?? throw new InvalidOperationException("Connection string 'Default' not found.");
-builder.Services.AddInfrastructure(connectionString);
+builder.Services.AddInfrastructure(connectionString, builder.Configuration);
 
 // JWT Auth
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "dev-secret-key-change-in-production-32chars!";
