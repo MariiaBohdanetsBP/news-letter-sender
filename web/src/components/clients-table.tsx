@@ -133,7 +133,7 @@ export function ClientsTable({
             {filtered.map((c) => (
               <tr
                 key={c.companyId}
-                className="border-b border-border last:border-0 hover:bg-gray-50"
+                className="border-b border-border last:border-0 hover:bg-[#f3eefa]"
               >
                 <td className="px-4 py-2.5 font-mono text-xs text-text-secondary">
                   {c.companyId}
