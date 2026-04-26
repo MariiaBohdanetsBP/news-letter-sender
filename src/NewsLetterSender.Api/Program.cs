@@ -77,6 +77,7 @@ app.UseAuthorization();
 // Map endpoints
 app.MapAuthEndpoints();
 app.MapCampaignEndpoints();
+app.MapCompanyEndpoints();
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" })).WithTags("Health");
 
 app.Run();

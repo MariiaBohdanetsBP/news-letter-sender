@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { MOCK_COMPANIES } from "@/lib/mock-data";
 import {
   getCampaigns,
   getCampaignHistory,
+  getCompanies,
   createCampaign as apiCreateCampaign,
   renameCampaign as apiRenameCampaign,
   getDecisions,
@@ -21,7 +21,7 @@ import { CreateCampaignModal } from "@/components/create-campaign-modal";
 import { RenameCampaignModal } from "@/components/rename-campaign-modal";
 import { HistoryModal } from "@/components/history-modal";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import type { Campaign, CompanyDecision } from "@/types";
+import type { Campaign, CompanyDecision, RaynetCompany } from "@/types";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function DashboardPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [history, setHistory] = useState<Campaign[]>([]);
   const [activeCampaignId, setActiveCampaignId] = useState<string | null>(null);
-  const [companies] = useState<CompanyDecision[]>(MOCK_COMPANIES);
+  const [companies, setCompanies] = useState<CompanyDecision[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   // Per-campaign selections stored as Map<campaignId, Set<companyId>>
@@ -59,16 +59,27 @@ export default function DashboardPage() {
     }
   }, [authLoading, user, router]);
 
-  // Fetch campaigns + history from API
+  // Fetch campaigns + history + companies from API
   const fetchCampaigns = useCallback(async () => {
     try {
       setError(null);
-      const [active, sent] = await Promise.all([
+      const [active, sent, raynetCompanies] = await Promise.all([
         getCampaigns(),
         getCampaignHistory(),
+        getCompanies(),
       ]);
       setCampaigns(active);
       setHistory(sent);
+      // Map Raynet companies to CompanyDecision format for the table
+      setCompanies(
+        raynetCompanies.map((c) => ({
+          companyId: c.companyId,
+          companyName: c.companyName,
+          selected: false,
+          decidedBy: null,
+          accountManager: c.accountManager,
+        })),
+      );
     } catch (err) {
       console.error("Failed to fetch campaigns:", err);
       setError("Failed to load campaigns. Is the API running?");

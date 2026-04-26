@@ -15,6 +15,13 @@ export interface CompanyDecision {
   systemType?: string;
 }
 
+export interface RaynetCompany {
+  companyId: string;
+  companyName: string;
+  accountManager: string;
+  category: string | null;
+}
+
 export interface LoginResponse {
   token: string;
   displayName: string;

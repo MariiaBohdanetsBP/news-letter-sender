@@ -1,4 +1,4 @@
-import type { Campaign, CompanyDecision, LoginResponse } from "@/types";
+import type { Campaign, CompanyDecision, LoginResponse, RaynetCompany } from "@/types";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -101,4 +101,8 @@ export async function sendCampaign(id: string): Promise<Campaign> {
   return request<Campaign>(`/api/campaigns/${id}/send`, {
     method: "PUT",
   });
+}
+
+export async function getCompanies(): Promise<RaynetCompany[]> {
+  return request<RaynetCompany[]>("/api/companies");
 }
