@@ -39,7 +39,7 @@ export function Filters({
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
         <input
           type="text"
-          placeholder="Search company…"
+          placeholder="Hledat firmu…"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="h-9 rounded-lg border border-border pl-9 pr-3 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -52,7 +52,7 @@ export function Filters({
         onChange={(e) => onAccountManagerChange(e.target.value)}
         className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
       >
-        <option value="">All Managers</option>
+        <option value="">Všichni manažeři</option>
         {accountManagers.map((am) => (
           <option key={am} value={am}>
             {am}
@@ -66,7 +66,7 @@ export function Filters({
         onChange={(e) => onSystemTypeChange(e.target.value)}
         className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
       >
-        <option value="">All Systems</option>
+        <option value="">Všechny systémy</option>
         <option value="Muza">Muza</option>
         <option value="BP1">BP1</option>
       </select>
@@ -75,10 +75,10 @@ export function Filters({
       {hasFilters && (
         <button
           onClick={onClear}
-          className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-text-secondary transition-colors hover:bg-gray-100"
+          className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-text-secondary transition-colors hover:bg-primary-light"
         >
           <X className="h-3.5 w-3.5" />
-          Clear
+          Smazat
         </button>
       )}
     </div>

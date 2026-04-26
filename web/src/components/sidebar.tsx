@@ -27,11 +27,11 @@ export function Sidebar({
   const [historyOpen, setHistoryOpen] = useState(true);
 
   return (
-    <aside className="flex w-[300px] shrink-0 flex-col border-r border-border bg-card">
+    <aside className="flex w-[300px] shrink-0 flex-col border-r border-border bg-white">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <span className="text-sm font-semibold text-text-primary">
-          Campaigns
+        <span className="text-sm font-semibold uppercase tracking-wide text-text-muted">
+          Kampaně
         </span>
         <button
           onClick={onCreate}
@@ -41,7 +41,7 @@ export function Sidebar({
           )}
         >
           <Plus className="h-3.5 w-3.5" />
-          New
+          Nová
         </button>
       </div>
 
@@ -50,7 +50,7 @@ export function Sidebar({
         <div className="p-2">
           {campaigns.length === 0 && (
             <p className="px-2 py-4 text-center text-sm text-text-secondary">
-              No active campaigns
+                            Žádné aktivní kampaně
             </p>
           )}
           {campaigns.map((c) => (
@@ -68,10 +68,10 @@ export function Sidebar({
         <div className="border-t border-border">
           <button
             onClick={() => setHistoryOpen((v) => !v)}
-            className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-semibold text-text-secondary hover:bg-gray-50"
+            className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-semibold text-text-muted hover:bg-primary-light"
           >
             <History className="h-4 w-4" />
-            History
+            Historie
             <ChevronDown
               className={cn(
                 "ml-auto h-4 w-4 transition-transform",
@@ -84,14 +84,14 @@ export function Sidebar({
             <div className="px-2 pb-2">
               {history.length === 0 && (
                 <p className="px-2 py-3 text-center text-xs text-text-secondary">
-                  No sent campaigns yet
+                  Zatím žádné odeslané kampaně
                 </p>
               )}
               {history.map((c) => (
                 <button
                   key={c.id}
                   onClick={() => onHistoryClick(c)}
-                  className="flex w-full flex-col rounded-md px-3 py-2 text-left transition-colors hover:bg-gray-50"
+                  className="flex w-full flex-col rounded-md px-3 py-2 text-left transition-colors hover:bg-primary-light"
                 >
                   <span className="text-sm text-text-primary">{c.name}</span>
                   <span className="text-xs text-text-secondary">
@@ -123,8 +123,8 @@ function CampaignRow({
       className={cn(
         "group flex cursor-pointer items-center justify-between rounded-md px-3 py-2 transition-colors",
         isActive
-          ? "bg-primary text-white"
-          : "text-text-primary hover:bg-primary-light",
+          ? "border-l-3 border-primary bg-primary-light text-primary font-semibold"
+          : "border-l-3 border-transparent text-text-primary hover:bg-primary-light",
       )}
       onClick={onSelect}
     >
@@ -134,10 +134,10 @@ function CampaignRow({
           <span
             className={cn(
               "text-xs",
-              isActive ? "text-white/70" : "text-text-secondary",
+              isActive ? "text-primary/70" : "text-text-secondary",
             )}
           >
-            Plan: {new Date(campaign.planDate).toLocaleDateString("cs-CZ")}
+            Plán: {new Date(campaign.planDate).toLocaleDateString("cs-CZ")}
           </span>
         )}
       </div>
@@ -148,9 +148,9 @@ function CampaignRow({
         }}
         className={cn(
           "rounded p-1 opacity-0 transition-opacity group-hover:opacity-100",
-          isActive ? "hover:bg-white/20" : "hover:bg-primary-light",
+          isActive ? "hover:bg-primary/10" : "hover:bg-primary-light",
         )}
-        title="Rename"
+        title="Přejmenovat"
       >
         <Pencil className="h-3.5 w-3.5" />
       </button>

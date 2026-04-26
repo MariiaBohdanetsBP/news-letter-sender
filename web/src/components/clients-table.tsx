@@ -61,7 +61,7 @@ export function ClientsTable({
       {/* Selection summary */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-medium text-text-primary">
-          Selected clients:{" "}
+          Vybraní klienti:{" "}
           <span className="font-semibold text-primary">
             {selectedIds.size}
           </span>
@@ -82,7 +82,7 @@ export function ClientsTable({
         ))}
         {selectedCompanies.length > 8 && (
           <span className="text-xs text-text-secondary">
-            +{selectedCompanies.length - 8} more
+            +{selectedCompanies.length - 8} dalších
           </span>
         )}
       </div>
@@ -91,7 +91,7 @@ export function ClientsTable({
       <div className="overflow-hidden rounded-xl border border-border bg-card">
         <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
           <span className="text-sm text-text-secondary">
-            {filtered.length} companies
+            {filtered.length} firem
           </span>
           <button
             onClick={onSave}
@@ -102,13 +102,13 @@ export function ClientsTable({
             )}
           >
             <Save className="h-4 w-4" />
-            {saving ? "Saving…" : "Save selection"}
+            {saving ? "Ukládání…" : "Uložit výběr"}
           </button>
         </div>
 
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-border bg-gray-50/50">
+            <tr className="border-b border-border bg-primary-light">
               <th className="px-4 py-2.5 font-medium text-text-secondary">
                 ID
               </th>
@@ -117,7 +117,7 @@ export function ClientsTable({
                   onClick={() => setSortAsc((v) => !v)}
                   className="flex items-center gap-1 hover:text-text-primary"
                 >
-                  Company
+                  Firma
                   <ArrowUpDown className="h-3.5 w-3.5" />
                 </button>
               </th>
@@ -125,7 +125,7 @@ export function ClientsTable({
                 Typ systému
               </th>
               <th className="px-4 py-2.5 text-center font-medium text-text-secondary">
-                Selected
+                Vybráno
               </th>
             </tr>
           </thead>
@@ -133,7 +133,7 @@ export function ClientsTable({
             {filtered.map((c) => (
               <tr
                 key={c.companyId}
-                className="border-b border-border last:border-0 hover:bg-gray-50/50"
+                className="border-b border-border last:border-0 hover:bg-[#f3eefa]"
               >
                 <td className="px-4 py-2.5 font-mono text-xs text-text-secondary">
                   {c.companyId}
@@ -169,7 +169,7 @@ export function ClientsTable({
                   colSpan={4}
                   className="px-4 py-8 text-center text-sm text-text-secondary"
                 >
-                  No companies match filters
+                  Žádné firmy neodpovídají filtrům
                 </td>
               </tr>
             )}

@@ -11,21 +11,21 @@ public class MockRaynetService : IRaynetService
 {
     private static readonly RaynetCompany[] Companies =
     [
-        new("R001", "Alza.cz", "Mariya Ivanova"),
-        new("R002", "Mall.cz", "Jan Novák"),
-        new("R003", "Rohlik.cz", "Mariya Ivanova"),
-        new("R004", "Zásilkovna", "Petra Horáková"),
-        new("R005", "Notino", "Jan Novák"),
-        new("R006", "CZC.cz", "Petra Horáková"),
-        new("R007", "Lékárna.cz", "Mariya Ivanova"),
-        new("R008", "Knihy Dobrovský", "Jan Novák"),
-        new("R009", "Pilulka", "Petra Horáková"),
-        new("R010", "Bonami", "Mariya Ivanova"),
-        new("R011", "Datart", "Jan Novák"),
-        new("R012", "Mountfield", "Petra Horáková"),
-        new("R013", "Okay.cz", "Mariya Ivanova"),
-        new("R014", "Sportisimo", "Jan Novák"),
-        new("R015", "Tescoma", "Petra Horáková"),
+        new("R001", "Alza.cz", "Mariya Ivanova", "Muza"),
+        new("R002", "Mall.cz", "Jan Novák", "BP1"),
+        new("R003", "Rohlik.cz", "Mariya Ivanova", "Muza"),
+        new("R004", "Zásilkovna", "Petra Horáková", "BP1"),
+        new("R005", "Notino", "Jan Novák", "Muza"),
+        new("R006", "CZC.cz", "Petra Horáková", "BP1"),
+        new("R007", "Lékárna.cz", "Mariya Ivanova", "Muza"),
+        new("R008", "Knihy Dobrovský", "Jan Novák", "BP1"),
+        new("R009", "Pilulka", "Petra Horáková", "Muza"),
+        new("R010", "Bonami", "Mariya Ivanova", "BP1"),
+        new("R011", "Datart", "Jan Novák", "Muza"),
+        new("R012", "Mountfield", "Petra Horáková", "BP1"),
+        new("R013", "Okay.cz", "Mariya Ivanova", "Muza"),
+        new("R014", "Sportisimo", "Jan Novák", "BP1"),
+        new("R015", "Tescoma", "Petra Horáková", "Muza"),
     ];
 
     public Task<IReadOnlyList<RaynetCompany>> GetActiveCompaniesAsync(CancellationToken ct = default)

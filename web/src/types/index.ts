@@ -19,6 +19,7 @@ export interface RaynetCompany {
   companyId: string;
   companyName: string;
   accountManager: string;
+  systemType: string;
   category: string | null;
 }
 

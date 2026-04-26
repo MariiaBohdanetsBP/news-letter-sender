@@ -33,17 +33,17 @@ export function CreateCampaignModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="absolute inset-0 bg-black/40"
+        className="absolute inset-0 bg-[#100321]/60"
         onClick={onClose}
       />
       <div className="relative z-10 w-full max-w-md rounded-xl bg-card p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text-primary">
-            New Campaign
+            Nová kampaň
           </h2>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-text-secondary hover:bg-gray-100"
+            className="rounded-md p-1 text-text-secondary hover:bg-primary-light"
           >
             <X className="h-5 w-5" />
           </button>
@@ -52,13 +52,13 @@ export function CreateCampaignModal({
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label className="mb-1 block text-sm font-medium text-text-primary">
-              Campaign name
+              Název kampaně
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Summer Newsletter 2025"
+              placeholder="např. Letní newsletter 2025"
               className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
               autoFocus
             />
@@ -66,9 +66,9 @@ export function CreateCampaignModal({
 
           <div>
             <label className="mb-1 block text-sm font-medium text-text-primary">
-              Plan date{" "}
+              Datum plánu{" "}
               <span className="font-normal text-text-secondary">
-                (optional)
+                (nepovinné)
               </span>
             </label>
             <input
@@ -83,9 +83,9 @@ export function CreateCampaignModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-gray-50"
+              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-primary-light"
             >
-              Cancel
+              Zrušit
             </button>
             <button
               type="submit"
@@ -95,7 +95,7 @@ export function CreateCampaignModal({
                 "disabled:cursor-not-allowed disabled:opacity-50",
               )}
             >
-              {loading ? "Creating…" : "Create"}
+              {loading ? "Vytváření…" : "Vytvořit"}
             </button>
           </div>
         </form>

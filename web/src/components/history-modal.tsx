@@ -22,7 +22,7 @@ export function HistoryModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="absolute inset-0 bg-[#100321]/60" onClick={onClose} />
       <div className="relative z-10 w-full max-w-2xl rounded-xl bg-card p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
           <div>
@@ -31,11 +31,11 @@ export function HistoryModal({
             </h2>
             <div className="flex gap-4 text-sm text-text-secondary">
               <span>
-                Sent: {new Date(campaign.createdAt).toLocaleDateString("cs-CZ")}
+                Odesláno: {new Date(campaign.createdAt).toLocaleDateString("cs-CZ")}
               </span>
               {campaign.planDate && (
                 <span>
-                  Plan date:{" "}
+                  Datum plánu:{" "}
                   {new Date(campaign.planDate).toLocaleDateString("cs-CZ")}
                 </span>
               )}
@@ -43,7 +43,7 @@ export function HistoryModal({
           </div>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-text-secondary hover:bg-gray-100"
+            className="rounded-md p-1 text-text-secondary hover:bg-primary-light"
           >
             <X className="h-5 w-5" />
           </button>
@@ -51,12 +51,11 @@ export function HistoryModal({
 
         <div className="mb-3 rounded-md bg-primary-light px-3 py-2">
           <span className="text-sm font-medium text-primary">
-            {selected.length} {selected.length === 1 ? "company" : "companies"}{" "}
-            selected
+            {selected.length} {selected.length === 1 ? "firma vybrána" : "firem vybráno"}
           </span>
           <span className="text-sm text-text-secondary">
             {" "}
-            out of {decisions.length} total
+            z {decisions.length} celkem
           </span>
         </div>
 
@@ -66,10 +65,10 @@ export function HistoryModal({
               <thead className="sticky top-0 bg-card">
                 <tr className="border-b border-border">
                   <th className="pb-2 font-medium text-text-secondary">
-                    Company
+                    Firma
                   </th>
                   <th className="pb-2 font-medium text-text-secondary">
-                    Decided by
+                    Rozhodl/a
                   </th>
                 </tr>
               </thead>
@@ -91,7 +90,7 @@ export function HistoryModal({
             </table>
           ) : (
             <p className="py-4 text-center text-sm text-text-secondary">
-              No recipients were selected for this campaign.
+              Pro tuto kampaň nebyli vybráni žádní příjemci.
             </p>
           )}
         </div>
@@ -99,9 +98,9 @@ export function HistoryModal({
         <div className="mt-4 flex justify-end">
           <button
             onClick={onClose}
-            className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-gray-50"
+            className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-primary-light"
           >
-            Close
+            Zavřít
           </button>
         </div>
       </div>

@@ -78,11 +78,12 @@ export default function DashboardPage() {
           selected: false,
           decidedBy: null,
           accountManager: c.accountManager,
+          systemType: c.systemType,
         })),
       );
     } catch (err) {
       console.error("Failed to fetch campaigns:", err);
-      setError("Failed to load campaigns. Is the API running?");
+      setError("Nepodařilo se načíst kampaně. Běží API server?");
     } finally {
       setLoadingData(false);
     }
@@ -234,7 +235,7 @@ export default function DashboardPage() {
   if (authLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-sm text-text-secondary">Loading…</div>
+        <div className="text-sm text-text-secondary">Načítání…</div>
       </div>
     );
   }
@@ -244,10 +245,10 @@ export default function DashboardPage() {
       <Header />
 
       {error && (
-        <div className="border-b border-red-200 bg-red-50 px-6 py-2 text-sm text-red-600">
+        <div className="border-b border-danger/20 bg-danger/5 px-6 py-2 text-sm text-danger">
           {error}
           <button onClick={fetchCampaigns} className="ml-2 underline">
-            Retry
+            Zkusit znovu
           </button>
         </div>
       )}
@@ -267,7 +268,7 @@ export default function DashboardPage() {
         <main className="flex-1 overflow-y-auto p-6">
           {loadingData ? (
             <div className="flex h-full items-center justify-center">
-              <div className="text-sm text-text-secondary">Loading campaigns…</div>
+              <div className="text-sm text-text-secondary">Načítání kampaní…</div>
             </div>
           ) : activeCampaignId ? (
             <div className="flex flex-col gap-5">
@@ -277,14 +278,14 @@ export default function DashboardPage() {
                     {campaigns.find((c) => c.id === activeCampaignId)?.name}
                   </h2>
                   <p className="text-sm text-text-secondary">
-                    Select companies to include in this campaign
+                    Vyberte firmy pro tuto kampaň
                   </p>
                 </div>
                 <button
                   onClick={() => setSendConfirmOpen(true)}
-                  className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"
+                  className="rounded-md bg-success px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-success/90"
                 >
-                  Mark as Sent
+                  Označit jako odesláno
                 </button>
               </div>
 
@@ -314,10 +315,10 @@ export default function DashboardPage() {
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
                 <p className="text-lg font-medium text-text-secondary">
-                  Select a campaign to get started
+                  Vyberte kampaň pro začátek
                 </p>
                 <p className="mt-1 text-sm text-text-secondary">
-                  Choose from the sidebar or create a new one
+                  Vyberte z postranního panelu nebo vytvořte novou
                 </p>
               </div>
             </div>
@@ -350,9 +351,9 @@ export default function DashboardPage() {
 
       <ConfirmDialog
         open={sendConfirmOpen}
-        title="Mark Campaign as Sent"
-        message={`Are you sure you want to mark "${campaigns.find((c) => c.id === activeCampaignId)?.name ?? ""}" as sent? This action cannot be undone — the campaign will move to history.`}
-        confirmLabel="Yes, Mark as Sent"
+        title="Označit kampaň jako odesláno"
+        message={`Opravdu chcete označit "${campaigns.find((c) => c.id === activeCampaignId)?.name ?? ""}" jako odesláno? Tuto akci nelze vrátit — kampaň se přesune do historie.`}
+        confirmLabel="Ano, označit jako odesláno"
         confirmVariant="primary"
         onConfirm={handleSendCampaign}
         onCancel={() => setSendConfirmOpen(false)}

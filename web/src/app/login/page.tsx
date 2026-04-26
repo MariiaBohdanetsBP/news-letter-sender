@@ -20,37 +20,37 @@ export default function LoginPage() {
       await login(username, password);
       router.push("/");
     } catch {
-      setError("Invalid username or password");
+      setError("Neplatné uživatelské jméno nebo heslo");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm rounded-xl border border-border bg-card p-8 shadow-sm">
+    <div className="flex min-h-screen items-center justify-center bg-[#100321] px-4">
+      <div className="w-full max-w-sm rounded-xl border border-border bg-card p-8 shadow-xl">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-xl text-white">
             ✉
           </div>
           <h1 className="text-xl font-semibold text-text-primary">
-            Newsletter Sender
+            Odesílač newsletterů
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
-            Sign in to manage campaigns
+            Přihlaste se pro správu kampaní
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {error && (
-            <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+            <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">
               {error}
             </div>
           )}
 
           <div>
             <label className="mb-1 block text-sm font-medium text-text-primary">
-              Username
+              Uživatelské jméno
             </label>
             <input
               type="text"
@@ -64,7 +64,7 @@ export default function LoginPage() {
 
           <div>
             <label className="mb-1 block text-sm font-medium text-text-primary">
-              Password
+              Heslo
             </label>
             <input
               type="password"
@@ -80,7 +80,7 @@ export default function LoginPage() {
             disabled={loading}
             className="mt-2 rounded-lg bg-primary py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading ? "Signing in…" : "Sign in"}
+            {loading ? "Přihlašování…" : "Přihlásit se"}
           </button>
         </form>
       </div>

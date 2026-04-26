@@ -17,7 +17,7 @@ export function ConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = "Confirm",
+  confirmLabel = "Potvrdit",
   confirmVariant = "primary",
   onConfirm,
   onCancel,
@@ -26,7 +26,7 @@ export function ConfirmDialog({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#100321]/60">
       <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
         <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
         <p className="mt-2 text-sm text-text-secondary">{message}</p>
@@ -35,9 +35,9 @@ export function ConfirmDialog({
           <button
             onClick={onCancel}
             disabled={loading}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-gray-50"
+            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-primary-light"
           >
-            Cancel
+            Zrušit
           </button>
           <button
             onClick={onConfirm}
@@ -45,11 +45,11 @@ export function ConfirmDialog({
             className={cn(
               "rounded-md px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50",
               confirmVariant === "danger"
-                ? "bg-red-600 hover:bg-red-700"
+                ? "bg-danger hover:bg-danger-hover"
                 : "bg-primary hover:bg-primary-hover",
             )}
           >
-            {loading ? "Processing…" : confirmLabel}
+            {loading ? "Zpracování…" : confirmLabel}
           </button>
         </div>
       </div>

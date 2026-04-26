@@ -7,4 +7,5 @@ public record RaynetCompany(
     string CompanyId,
     string CompanyName,
     string AccountManager,
+    string SystemType = "Muza",
     string? Category = null);

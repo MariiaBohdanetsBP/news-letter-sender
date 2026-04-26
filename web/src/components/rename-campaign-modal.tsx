@@ -31,15 +31,15 @@ export function RenameCampaignModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="absolute inset-0 bg-[#100321]/60" onClick={onClose} />
       <div className="relative z-10 w-full max-w-sm rounded-xl bg-card p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text-primary">
-            Rename Campaign
+            Přejmenovat kampaň
           </h2>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-text-secondary hover:bg-gray-100"
+            className="rounded-md p-1 text-text-secondary hover:bg-primary-light"
           >
             <X className="h-5 w-5" />
           </button>
@@ -58,9 +58,9 @@ export function RenameCampaignModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-gray-50"
+              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-primary-light"
             >
-              Cancel
+              Zrušit
             </button>
             <button
               type="submit"
@@ -70,7 +70,7 @@ export function RenameCampaignModal({
                 "disabled:cursor-not-allowed disabled:opacity-50",
               )}
             >
-              {loading ? "Saving…" : "Rename"}
+              {loading ? "Ukládání…" : "Přejmenovat"}
             </button>
           </div>
         </form>
