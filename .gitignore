@@ -1,0 +1,22 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.log
+*.vs/
+.idea/
+
+## Node / Next.js
+node_modules/
+.next/
+out/
+.env*.local
+
+## OS
+.DS_Store
+Thumbs.db
+
+## PostgreSQL data
+pgdata/
