@@ -1,7 +1,8 @@
 "use client";
 
+import { useMemo } from "react";
 import { Search, X } from "lucide-react";
-import { ACCOUNT_MANAGERS } from "@/lib/mock-data";
+import type { CompanyDecision } from "@/types";
 
 interface FiltersProps {
   search: string;
@@ -11,6 +12,7 @@ interface FiltersProps {
   systemType: string;
   onSystemTypeChange: (value: string) => void;
   onClear: () => void;
+  companies: CompanyDecision[];
 }
 
 export function Filters({
@@ -21,8 +23,14 @@ export function Filters({
   systemType,
   onSystemTypeChange,
   onClear,
+  companies,
 }: FiltersProps) {
   const hasFilters = search || accountManager || systemType;
+
+  const accountManagers = useMemo(() => {
+    const names = new Set(companies.map((c) => c.accountManager).filter(Boolean));
+    return Array.from(names).sort((a, b) => (a ?? "").localeCompare(b ?? "", "cs"));
+  }, [companies]);
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -45,7 +53,7 @@ export function Filters({
         className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
       >
         <option value="">All Managers</option>
-        {ACCOUNT_MANAGERS.map((am) => (
+        {accountManagers.map((am) => (
           <option key={am} value={am}>
             {am}
           </option>

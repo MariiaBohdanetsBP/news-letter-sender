@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using NewsLetterSender.Api.Endpoints;
@@ -11,6 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Serilog
 builder.Host.UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration));
+
+// JSON: serialize enums as strings
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 // Infrastructure (EF Core + repos)
 var connectionString = builder.Configuration.GetConnectionString("Default")
