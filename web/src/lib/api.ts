@@ -96,3 +96,9 @@ export async function saveDecisions(
     body: JSON.stringify({ decisions }),
   });
 }
+
+export async function sendCampaign(id: string): Promise<Campaign> {
+  return request<Campaign>(`/api/campaigns/${id}/send`, {
+    method: "PUT",
+  });
+}

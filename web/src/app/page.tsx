@@ -11,6 +11,7 @@ import {
   renameCampaign as apiRenameCampaign,
   getDecisions,
   saveDecisions as apiSaveDecisions,
+  sendCampaign as apiSendCampaign,
 } from "@/lib/api";
 import { Header } from "@/components/header";
 import { Sidebar } from "@/components/sidebar";
@@ -19,6 +20,7 @@ import { ClientsTable } from "@/components/clients-table";
 import { CreateCampaignModal } from "@/components/create-campaign-modal";
 import { RenameCampaignModal } from "@/components/rename-campaign-modal";
 import { HistoryModal } from "@/components/history-modal";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import type { Campaign, CompanyDecision } from "@/types";
 
 export default function DashboardPage() {
@@ -47,6 +49,8 @@ export default function DashboardPage() {
   const [historyModal, setHistoryModal] = useState<Campaign | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sendConfirmOpen, setSendConfirmOpen] = useState(false);
+  const [sending, setSending] = useState(false);
 
   // Auth guard
   useEffect(() => {
@@ -177,6 +181,27 @@ export default function DashboardPage() {
     }
   }, [activeCampaignId, selectedIds, companies]);
 
+  const handleSendCampaign = useCallback(async () => {
+    if (!activeCampaignId) return;
+    setSending(true);
+    try {
+      const sent = await apiSendCampaign(activeCampaignId);
+      // Move from active to history
+      setCampaigns((prev) => prev.filter((c) => c.id !== activeCampaignId));
+      setHistory((prev) => [sent, ...prev]);
+      // Clear selection cache and deselect
+      selectionsRef.current.delete(activeCampaignId);
+      setActiveCampaignId(null);
+      setSelectedIds(new Set());
+      setSendConfirmOpen(false);
+    } catch (err) {
+      console.error("Failed to send campaign:", err);
+      alert("Failed to mark campaign as sent");
+    } finally {
+      setSending(false);
+    }
+  }, [activeCampaignId]);
+
   const clearFilters = useCallback(() => {
     setSearch("");
     setAccountManager("");
@@ -235,13 +260,21 @@ export default function DashboardPage() {
             </div>
           ) : activeCampaignId ? (
             <div className="flex flex-col gap-5">
-              <div>
-                <h2 className="text-lg font-semibold text-text-primary">
-                  {campaigns.find((c) => c.id === activeCampaignId)?.name}
-                </h2>
-                <p className="text-sm text-text-secondary">
-                  Select companies to include in this campaign
-                </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-text-primary">
+                    {campaigns.find((c) => c.id === activeCampaignId)?.name}
+                  </h2>
+                  <p className="text-sm text-text-secondary">
+                    Select companies to include in this campaign
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSendConfirmOpen(true)}
+                  className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"
+                >
+                  Mark as Sent
+                </button>
               </div>
 
               <Filters
@@ -302,6 +335,17 @@ export default function DashboardPage() {
         campaign={historyModal}
         decisions={historyDecisions}
         onClose={() => setHistoryModal(null)}
+      />
+
+      <ConfirmDialog
+        open={sendConfirmOpen}
+        title="Mark Campaign as Sent"
+        message={`Are you sure you want to mark "${campaigns.find((c) => c.id === activeCampaignId)?.name ?? ""}" as sent? This action cannot be undone — the campaign will move to history.`}
+        confirmLabel="Yes, Mark as Sent"
+        confirmVariant="primary"
+        onConfirm={handleSendCampaign}
+        onCancel={() => setSendConfirmOpen(false)}
+        loading={sending}
       />
     </div>
   );

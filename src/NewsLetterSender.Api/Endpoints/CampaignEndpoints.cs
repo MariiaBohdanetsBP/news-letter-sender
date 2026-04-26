@@ -77,6 +77,21 @@ public static class CampaignEndpoints
         })
         .WithName("RenameCampaign");
 
+        // PUT /api/campaigns/{id}/send — mark campaign as sent
+        group.MapPut("/{id:guid}/send", async (Guid id, ICampaignRepository repo) =>
+        {
+            var campaign = await repo.GetByIdAsync(id);
+            if (campaign is null) return Results.NotFound();
+            if (campaign.Status == CampaignStatus.Sent)
+                return Results.Conflict("Campaign is already sent.");
+
+            campaign.Status = CampaignStatus.Sent;
+            campaign.UpdatedAt = DateTime.UtcNow;
+            await repo.UpdateAsync(campaign);
+            return Results.Ok(new CampaignDto(campaign.Id, campaign.Name, campaign.Status, campaign.PlanDate, campaign.CreatedAt));
+        })
+        .WithName("SendCampaign");
+
         // GET /api/campaigns/{id}/decisions — get company decisions
         group.MapGet("/{id:guid}/decisions", async (Guid id, ICompanyDecisionRepository decisionRepo) =>
         {
