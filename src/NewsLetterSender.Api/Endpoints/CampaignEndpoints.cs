@@ -49,8 +49,9 @@ public static class CampaignEndpoints
         .WithName("GetCampaign");
 
         // POST /api/campaigns — create
-        group.MapPost("/", async (CreateCampaignRequest request, ICampaignRepository repo) =>
+        group.MapPost("/", async (CreateCampaignRequest request, ICampaignRepository repo, IAuditLogRepository audit, ClaimsPrincipal principal) =>
         {
+            var username = principal.FindFirstValue(ClaimTypes.Name) ?? "unknown";
             var campaign = new Campaign
             {
                 Id = Guid.NewGuid(),
@@ -59,27 +60,48 @@ public static class CampaignEndpoints
                 Status = CampaignStatus.Processed
             };
             var created = await repo.CreateAsync(campaign);
+
+            await audit.LogAsync(new AuditLog
+            {
+                CampaignId = created.Id,
+                Action = "CampaignCreated",
+                PerformedBy = username,
+                Details = $"Created campaign '{created.Name}'"
+            });
+
             var dto = new CampaignDto(created.Id, created.Name, created.Status, created.PlanDate, created.CreatedAt);
             return Results.Created($"/api/campaigns/{dto.Id}", dto);
         })
         .WithName("CreateCampaign");
 
         // PUT /api/campaigns/{id}/rename — rename
-        group.MapPut("/{id:guid}/rename", async (Guid id, RenameCampaignRequest request, ICampaignRepository repo) =>
+        group.MapPut("/{id:guid}/rename", async (Guid id, RenameCampaignRequest request, ICampaignRepository repo, IAuditLogRepository audit, ClaimsPrincipal principal) =>
         {
+            var username = principal.FindFirstValue(ClaimTypes.Name) ?? "unknown";
             var campaign = await repo.GetByIdAsync(id);
             if (campaign is null) return Results.NotFound();
 
+            var oldName = campaign.Name;
             campaign.Name = request.Name;
             campaign.UpdatedAt = DateTime.UtcNow;
             await repo.UpdateAsync(campaign);
+
+            await audit.LogAsync(new AuditLog
+            {
+                CampaignId = id,
+                Action = "CampaignRenamed",
+                PerformedBy = username,
+                Details = $"Renamed '{oldName}' → '{request.Name}'"
+            });
+
             return Results.Ok(new CampaignDto(campaign.Id, campaign.Name, campaign.Status, campaign.PlanDate, campaign.CreatedAt));
         })
         .WithName("RenameCampaign");
 
         // PUT /api/campaigns/{id}/send — mark campaign as sent
-        group.MapPut("/{id:guid}/send", async (Guid id, ICampaignRepository repo) =>
+        group.MapPut("/{id:guid}/send", async (Guid id, ICampaignRepository repo, IAuditLogRepository audit, ClaimsPrincipal principal) =>
         {
+            var username = principal.FindFirstValue(ClaimTypes.Name) ?? "unknown";
             var campaign = await repo.GetByIdAsync(id);
             if (campaign is null) return Results.NotFound();
             if (campaign.Status == CampaignStatus.Sent)
@@ -88,6 +110,15 @@ public static class CampaignEndpoints
             campaign.Status = CampaignStatus.Sent;
             campaign.UpdatedAt = DateTime.UtcNow;
             await repo.UpdateAsync(campaign);
+
+            await audit.LogAsync(new AuditLog
+            {
+                CampaignId = id,
+                Action = "CampaignSent",
+                PerformedBy = username,
+                Details = $"Marked campaign '{campaign.Name}' as sent"
+            });
+
             return Results.Ok(new CampaignDto(campaign.Id, campaign.Name, campaign.Status, campaign.PlanDate, campaign.CreatedAt));
         })
         .WithName("SendCampaign");
@@ -107,6 +138,7 @@ public static class CampaignEndpoints
             Guid id,
             SaveDecisionsRequest request,
             ICompanyDecisionRepository decisionRepo,
+            IAuditLogRepository audit,
             ClaimsPrincipal principal) =>
         {
             var username = principal.FindFirstValue(ClaimTypes.Name) ?? "unknown";
@@ -120,8 +152,32 @@ public static class CampaignEndpoints
             }).ToList();
 
             await decisionRepo.SaveDecisionsAsync(id, decisions);
+
+            var selectedCount = decisions.Count(d => d.Selected);
+            await audit.LogAsync(new AuditLog
+            {
+                CampaignId = id,
+                Action = "DecisionsSaved",
+                PerformedBy = username,
+                Details = $"Saved decisions: {selectedCount} of {decisions.Count} companies selected"
+            });
+
             return Results.Ok();
         })
         .WithName("SaveDecisions");
+
+        // GET /api/campaigns/{id}/audit — get audit trail
+        group.MapGet("/{id:guid}/audit", async (Guid id, IAuditLogRepository audit) =>
+        {
+            var logs = await audit.GetByCampaignAsync(id);
+            return Results.Ok(logs.Select(a => new
+            {
+                a.Action,
+                a.PerformedBy,
+                a.Details,
+                a.Timestamp
+            }));
+        })
+        .WithName("GetAuditLog");
     }
 }
