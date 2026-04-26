@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: newsletter_sender
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=newsletter_sender;Username=postgres;Password=postgres"
+      Jwt__Key: "dev-secret-key-change-in-production-32chars!"
+      Jwt__Issuer: "NewsLetterSender"
+      Jwt__Audience: "NewsLetterSender"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
