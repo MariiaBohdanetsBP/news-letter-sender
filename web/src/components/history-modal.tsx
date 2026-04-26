@@ -23,15 +23,23 @@ export function HistoryModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg rounded-xl bg-card p-6 shadow-xl">
+      <div className="relative z-10 w-full max-w-2xl rounded-xl bg-card p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">
               {campaign.name}
             </h2>
-            <p className="text-sm text-text-secondary">
-              Sent: {new Date(campaign.createdAt).toLocaleDateString("cs-CZ")}
-            </p>
+            <div className="flex gap-4 text-sm text-text-secondary">
+              <span>
+                Sent: {new Date(campaign.createdAt).toLocaleDateString("cs-CZ")}
+              </span>
+              {campaign.planDate && (
+                <span>
+                  Plan date:{" "}
+                  {new Date(campaign.planDate).toLocaleDateString("cs-CZ")}
+                </span>
+              )}
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -41,29 +49,41 @@ export function HistoryModal({
           </button>
         </div>
 
-        <div className="max-h-80 overflow-y-auto">
-          <p className="mb-2 text-sm font-medium text-text-primary">
-            Selected recipients: {selected.length}
-          </p>
+        <div className="mb-3 rounded-md bg-primary-light px-3 py-2">
+          <span className="text-sm font-medium text-primary">
+            {selected.length} {selected.length === 1 ? "company" : "companies"}{" "}
+            selected
+          </span>
+          <span className="text-sm text-text-secondary">
+            {" "}
+            out of {decisions.length} total
+          </span>
+        </div>
 
+        <div className="max-h-80 overflow-y-auto">
           {selected.length > 0 ? (
             <table className="w-full text-left text-sm">
-              <thead>
+              <thead className="sticky top-0 bg-card">
                 <tr className="border-b border-border">
-                  <th className="pb-2 font-medium text-text-secondary">ID</th>
                   <th className="pb-2 font-medium text-text-secondary">
                     Company
+                  </th>
+                  <th className="pb-2 font-medium text-text-secondary">
+                    Decided by
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {selected.map((d) => (
-                  <tr key={d.companyId} className="border-b border-border last:border-0">
-                    <td className="py-1.5 font-mono text-xs text-text-secondary">
-                      {d.companyId}
-                    </td>
+                  <tr
+                    key={d.companyId}
+                    className="border-b border-border last:border-0"
+                  >
                     <td className="py-1.5 text-text-primary">
                       {d.companyName}
+                    </td>
+                    <td className="py-1.5 text-text-secondary">
+                      {d.decidedBy ?? "—"}
                     </td>
                   </tr>
                 ))}
