@@ -4,40 +4,16 @@ Interní nástroj pro Benefit Plus — správa emailových kampaní pro account 
 
 ---
 
-## 🚀 Jak spustit (krok za krokem)
+## 🚀 Jak spustit
 
-### Požadavky
+Existují dvě varianty — vyberte si podle toho, co máte k dispozici:
 
-Na počítači musíte mít nainstalovaný **Docker Desktop**:
+| Varianta | Potřeba admin práv | Náročnost |
+|----------|-------------------|-----------|
+| **A) S Dockerem** | ✅ Ano | Jednodušší (1 příkaz) |
+| **B) Bez Dockeru** | ❌ Ne | Více kroků, ale funguje všude |
 
-1. Stáhněte z [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/)
-2. Nainstalujte a spusťte (ikona velryby v systémové liště)
-3. Počkejte, než se Docker nastartuje (zelená ikona = připraveno)
-
-### Spuštění aplikace
-
-Otevřete **Terminál** (macOS) nebo **PowerShell** (Windows) a spusťte:
-
-```bash
-# 1. Stáhněte kód (pouze poprvé)
-git clone https://github.com/Konopl9/NewsLetterSender.git
-cd NewsLetterSender
-
-# 2. Spusťte vše jedním příkazem
-docker compose up --build
-```
-
-> ⏳ První spuštění trvá 2–5 minut (stahuje se .NET, Node.js, PostgreSQL).
-> Další spuštění už jsou do 30 sekund.
-
-### Otevřete v prohlížeči
-
-| Co | Adresa |
-|----|--------|
-| **Aplikace** | [http://localhost:3000](http://localhost:3000) |
-| **API (Swagger)** | [http://localhost:5000/swagger](http://localhost:5000/swagger) |
-
-### Přihlášení
+### Přihlašovací údaje (obě varianty)
 
 | Uživatel | Heslo | Role |
 |----------|-------|------|
@@ -48,20 +24,125 @@ docker compose up --build
 
 ---
 
-## ⏹️ Zastavení
+## Varianta A) S Dockerem (doporučeno)
+
+### Požadavky
+
+- **Docker Desktop** — stáhněte z [docker.com](https://www.docker.com/products/docker-desktop/) (vyžaduje admin práva)
+- **Git** — stáhněte z [git-scm.com](https://git-scm.com/)
+
+### Spuštění
 
 ```bash
-docker compose down          # zastaví kontejnery (data zůstanou)
+# 1. Stáhněte kód (pouze poprvé)
+git clone https://github.com/maksym-mishchenko/NewsLetterSender.git
+cd NewsLetterSender
+
+# 2. Spusťte vše jedním příkazem
+docker compose up --build
+```
+
+> ⏳ První spuštění trvá 2–5 minut. Další spuštění do 30 sekund.
+
+### Otevřete v prohlížeči
+
+| Co | Adresa |
+|----|--------|
+| **Aplikace** | [http://localhost:3000](http://localhost:3000) |
+| **API (Swagger)** | [http://localhost:5000/swagger](http://localhost:5000/swagger) |
+
+### Zastavení
+
+```bash
+docker compose down          # zastaví (data zůstanou)
 docker compose down -v       # zastaví + smaže databázi
 ```
 
-Pro opětovné spuštění:
+---
+
+## Varianta B) Bez Dockeru (nevyžaduje admin práva)
+
+### 1. Nainstalujte tyto programy
+
+Stáhněte a nainstalujte (vše funguje bez admin práv — vyberte "Install for current user"):
+
+| Program | Odkaz | Verze |
+|---------|-------|-------|
+| **.NET 10 SDK** | [dotnet.microsoft.com/download](https://dotnet.microsoft.com/download/dotnet/10.0) | 10.0 nebo novější |
+| **Node.js** | [nodejs.org](https://nodejs.org/) | 22 LTS nebo novější |
+| **PostgreSQL** | [postgresql.org/download](https://www.postgresql.org/download/windows/) | 17 nebo novější |
+
+> 💡 **PostgreSQL instalátor**: zapamatujte si heslo, které zadáte pro uživatele `postgres`. Výchozí port je `5432`.
+
+### 2. Stáhněte kód
 
 ```bash
-docker compose up
+git clone https://github.com/maksym-mishchenko/NewsLetterSender.git
+cd NewsLetterSender
 ```
 
-(Bez `--build` — pokud jste nezměnili kód.)
+### 3. Nastavte databázi
+
+Otevřete **pgAdmin** (nainstaluje se s PostgreSQL) nebo **psql** a vytvořte databázi:
+
+```sql
+CREATE DATABASE newsletter_sender;
+```
+
+Pokud jste při instalaci PostgreSQL zadali jiné heslo než `postgres`, upravte soubor `src/NewsLetterSender.Api/appsettings.Development.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "Default": "Host=localhost;Port=5432;Database=newsletter_sender;Username=postgres;Password=VAŠE_HESLO"
+  }
+}
+```
+
+### 4. Spusťte backend (API)
+
+Otevřete **první** terminál/PowerShell:
+
+```bash
+cd NewsLetterSender
+
+# Stáhněte závislosti a spusťte (poprvé to chvíli trvá)
+dotnet run --project src/NewsLetterSender.Api --urls http://localhost:5000
+```
+
+> Počkejte, než se zobrazí: `Now listening on: http://localhost:5000`
+> API automaticky vytvoří tabulky a naplní testovací data.
+
+### 5. Spusťte frontend (web)
+
+Otevřete **druhý** terminál/PowerShell:
+
+```bash
+cd NewsLetterSender/web
+
+# Nainstalujte závislosti (pouze poprvé)
+npm install
+
+# Spusťte vývojový server
+npm run dev
+```
+
+> Počkejte, než se zobrazí: `Ready on http://localhost:3000`
+
+### 6. Otevřete v prohlížeči
+
+| Co | Adresa |
+|----|--------|
+| **Aplikace** | [http://localhost:3000](http://localhost:3000) |
+| **API (Swagger)** | [http://localhost:5000/swagger](http://localhost:5000/swagger) |
+
+### Zastavení
+
+V obou terminálech stiskněte **Ctrl+C**.
+
+### Opětovné spuštění
+
+Stačí znovu spustit kroky 4 a 5 (ne 1–3, ty se dělají jen poprvé).
 
 ---
 
