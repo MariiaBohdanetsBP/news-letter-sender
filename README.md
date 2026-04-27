@@ -65,20 +65,82 @@ docker compose up
 
 ---
 
-## 🔌 Napojení na Raynet a Ecomail (produkce)
+## 🔌 Napojení na externí služby
 
-Výchozí režim: **mock data** (testovací firmy). Pro napojení na reálné API přidejte klíče do `docker-compose.yml` v sekci `api > environment`:
+Výchozí režim: **mock data** (testovací firmy, odesílání do konzole). Služby se zapínají jednotlivě — stačí přidat API klíče.
+
+### Raynet CRM (seznam firem a kontaktů)
+
+1. Přihlaste se do [app.raynet.cz](https://app.raynet.cz) → **Nastavení** → **API**
+2. Vytvořte nový API klíč
+3. Zapamatujte si **název instance** (z URL: `https://app.raynet.cz/api/v2` → instance je název vaší firmy v Raynet)
+4. Přidejte do `docker-compose.yml` v sekci `api > environment`:
 
 ```yaml
-api:
-  environment:
     Raynet__ApiKey: "váš-raynet-api-klíč"
     Raynet__InstanceName: "benefitplus"
+```
+
+5. Restartujte: `docker compose down && docker compose up`
+
+✅ Aplikace nyní načítá firmy přímo z Raynet CRM místo testovacích dat.
+
+---
+
+### Ecomail (odesílání emailů)
+
+1. Přihlaste se do [ecomail.cz](https://app.ecomailapp.cz) → **Nastavení** → **API klíče**
+2. Zkopírujte API klíč
+3. Zjistěte **ID seznamu** kontaktů: **Seznamy kontaktů** → klikněte na seznam → ID je v URL (`/lists/ČÍSLO/...`)
+4. Přidejte do `docker-compose.yml` v sekci `api > environment`:
+
+```yaml
     Ecomail__ApiKey: "váš-ecomail-api-klíč"
     Ecomail__DefaultListId: "1"
 ```
 
-Poté restartujte: `docker compose down && docker compose up`
+5. Restartujte: `docker compose down && docker compose up`
+
+✅ Při odeslání kampaně se kontakty synchronizují do Ecomail seznamu.
+
+---
+
+### Power BI (reporting a dashboardy)
+
+Power BI se připojuje přímo k PostgreSQL databázi aplikace.
+
+1. Otevřete **Power BI Desktop** → **Získat data** → **PostgreSQL databáze**
+2. Zadejte:
+   - **Server**: `localhost` (nebo IP počítače kde běží Docker)
+   - **Port**: `5432`
+   - **Databáze**: `newsletter_sender`
+   - **Uživatel**: `postgres`
+   - **Heslo**: `postgres`
+3. Vyberte tabulky:
+   - `campaigns` — seznam kampaní
+   - `campaign_decisions` — rozhodnutí (ano/ne/možná) pro každou firmu
+   - `audit_logs` — historie všech akcí (kdo, co, kdy)
+   - `users` — uživatelé systému
+4. Vytvořte si dashboardy a reporty
+
+> 💡 **Tip**: Pro produkci nastavte silnější heslo databáze v `docker-compose.yml` (`POSTGRES_PASSWORD`).
+
+---
+
+### Kompletní příklad `docker-compose.yml` se všemi službami
+
+```yaml
+services:
+  api:
+    environment:
+      # ... stávající nastavení ...
+      Raynet__ApiKey: "váš-klíč"
+      Raynet__InstanceName: "benefitplus"
+      Ecomail__ApiKey: "váš-klíč"
+      Ecomail__DefaultListId: "1"
+```
+
+Každou službu můžete zapnout nezávisle — nemusíte mít všechny klíče najednou.
 
 ---
 
