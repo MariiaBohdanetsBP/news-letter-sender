@@ -62,17 +62,62 @@ docker compose down -v       # zastaví + smaže databázi
 
 ## Varianta B) Bez Dockeru (nevyžaduje admin práva)
 
-### 1. Nainstalujte tyto programy
+### 1. Nainstalujte programy přes PowerShell
 
-Stáhněte a nainstalujte (vše funguje bez admin práv — vyberte "Install for current user"):
+Otevřete **PowerShell** a spusťte tyto příkazy (nevyžadují admin práva):
 
-| Program | Odkaz | Verze |
-|---------|-------|-------|
-| **.NET 10 SDK** | [dotnet.microsoft.com/download](https://dotnet.microsoft.com/download/dotnet/10.0) | 10.0 nebo novější |
-| **Node.js** | [nodejs.org](https://nodejs.org/) | 22 LTS nebo novější |
-| **PostgreSQL** | [postgresql.org/download](https://www.postgresql.org/download/windows/) | 17 nebo novější |
+#### .NET 10 SDK
 
-> 💡 **PostgreSQL instalátor**: zapamatujte si heslo, které zadáte pro uživatele `postgres`. Výchozí port je `5432`.
+```powershell
+# Stáhne a nainstaluje .NET SDK do vašeho profilu
+Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "$env:TEMP\dotnet-install.ps1"
+& "$env:TEMP\dotnet-install.ps1" -Channel 10.0
+
+# Přidejte do PATH (spustit po každém otevření PowerShell, nebo přidejte do profilu)
+$env:DOTNET_ROOT = "$env:LOCALAPPDATA\Microsoft\dotnet"
+$env:PATH = "$env:DOTNET_ROOT;$env:DOTNET_ROOT\tools;$env:PATH"
+
+# Ověření
+dotnet --version
+```
+
+#### Node.js 22 (portable — bez instalátoru)
+
+```powershell
+# Stáhne Node.js jako ZIP a rozbalí do vašeho profilu
+$nodeVersion = "v22.15.0"
+$nodeUrl = "https://nodejs.org/dist/$nodeVersion/node-$nodeVersion-win-x64.zip"
+Invoke-WebRequest -Uri $nodeUrl -OutFile "$env:TEMP\node.zip"
+Expand-Archive "$env:TEMP\node.zip" -DestinationPath "$env:LOCALAPPDATA\node" -Force
+
+# Přidejte do PATH
+$env:PATH = "$env:LOCALAPPDATA\node\node-$nodeVersion-win-x64;$env:PATH"
+
+# Ověření
+node --version
+npm --version
+```
+
+#### PostgreSQL
+
+PostgreSQL vyžaduje klasickou instalaci — stáhněte z [postgresql.org/download](https://www.postgresql.org/download/windows/).
+
+> 💡 Při instalaci vyberte **"Install for current user"** pokud nemáte admin práva.
+> Zapamatujte si heslo pro uživatele `postgres`. Výchozí port je `5432`.
+
+#### Trvalé nastavení PATH (volitelné — aby fungoval po restartu)
+
+Přidejte do svého PowerShell profilu (spustit jednou):
+
+```powershell
+# Vytvoří/upraví PowerShell profil
+$profileContent = @"
+`$env:DOTNET_ROOT = "`$env:LOCALAPPDATA\Microsoft\dotnet"
+`$env:PATH = "`$env:DOTNET_ROOT;`$env:DOTNET_ROOT\tools;`$env:LOCALAPPDATA\node\node-v22.15.0-win-x64;`$env:PATH"
+"@
+New-Item -Path $PROFILE -ItemType File -Force | Out-Null
+Add-Content -Path $PROFILE -Value $profileContent
+```
 
 ### 2. Stáhněte kód
 
