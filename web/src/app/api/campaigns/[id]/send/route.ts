@@ -32,27 +32,23 @@ export async function PUT(
     try {
       // Look up real emails from uploaded contacts for this campaign
       const contacts = await prisma.contact.findMany({
-        where: {
-          campaignId: id,
-          companyId: { in: decisions.map((d) => d.companyId) },
-        },
+        where: { campaignId: id },
       });
-      const emailsByCompany = new Map<string, { email: string; name: string }[]>();
-      for (const c of contacts) {
-        const list = emailsByCompany.get(c.companyId) ?? [];
-        list.push({ email: c.email, name: c.contactName ?? c.companyName });
-        emailsByCompany.set(c.companyId, list);
-      }
 
-      // Build subscriber list: ONLY companies with real emails from CSV
+      // Build subscriber list using fuzzy name matching (CSV names vs Raynet names)
       const subscriberData: { email: string; name: string; status: string }[] = [];
       const missingCompanies: string[] = [];
 
       for (const d of decisions) {
-        const real = emailsByCompany.get(d.companyId);
-        if (real?.length) {
-          for (const r of real) {
-            subscriberData.push({ email: r.email, name: r.name, status: "subscribed" });
+        const dName = d.companyName.toLowerCase();
+        // Find contacts whose companyName or companyId fuzzy-matches the decision company
+        const matched = contacts.filter((c) => {
+          const csvName = (c.companyName || c.companyId).toLowerCase();
+          return csvName.includes(dName) || dName.includes(csvName);
+        });
+        if (matched.length > 0) {
+          for (const m of matched) {
+            subscriberData.push({ email: m.email, name: m.contactName ?? m.companyName, status: "subscribed" });
           }
         } else {
           missingCompanies.push(d.companyName);
@@ -81,7 +77,7 @@ export async function PUT(
         }
       } else {
         ecomailStatus = "error";
-        ecomailMessage = "Žádné emaily nalezeny v CSV — nic k odeslání";
+        ecomailMessage = "Žádné emaily nalezeny v CSV — nic k aktualizaci";
       }
 
       // Attach warning about missing companies
