@@ -30,31 +30,31 @@ async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: 
 
   const companies: RaynetCompany[] = [];
   let offset = 0;
-  const limit = 100;
+  const limit = 1000; // single large batch to fit Vercel 10s timeout
 
   // Raynet Basic auth: "user@email.cz:apiToken"
   const credentials = btoa(`${apiUser}:${apiKey}`);
 
-  while (true) {
-    const res = await fetch(
-      `https://app.raynet.cz/api/v2/company/?offset=${offset}&limit=${limit}`,
-      {
-        headers: {
-          Authorization: `Basic ${credentials}`,
-          "X-Instance-Name": instanceName,
-          Accept: "application/json",
-        },
-        next: { revalidate: 300 },
-      }
-    );
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(`Raynet API ${res.status}: ${text.slice(0, 200)}`);
+  // Fetch up to 1000 companies (Vercel free tier has 10s timeout)
+  const res = await fetch(
+    `https://app.raynet.cz/api/v2/company/?offset=${offset}&limit=${limit}`,
+    {
+      headers: {
+        Authorization: `Basic ${credentials}`,
+        "X-Instance-Name": instanceName,
+        Accept: "application/json",
+      },
+      next: { revalidate: 300 },
     }
-    const json = await res.json();
-    if (!json.data?.length) break;
+  );
 
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Raynet API ${res.status}: ${text.slice(0, 200)}`);
+  }
+  const json = await res.json();
+
+  if (json.data?.length) {
     for (const c of json.data) {
       companies.push({
         companyId: String(c.id),
@@ -64,9 +64,6 @@ async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: 
         category: c.category?.value ?? null,
       });
     }
-
-    offset += limit;
-    if (json.data.length < limit) break;
   }
 
   return { companies, source: "raynet" };
