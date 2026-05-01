@@ -248,7 +248,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-screen flex-col">
-      <Header campaignId={activeCampaignId ?? undefined} />
+      <Header campaignId={activeCampaignId ?? undefined} onSend={() => setSendConfirmOpen(true)} />
 
       {error && (
         <div className="border-b border-danger/20 bg-danger/5 px-6 py-2 text-sm text-danger">
