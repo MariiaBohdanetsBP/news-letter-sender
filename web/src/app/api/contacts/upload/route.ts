@@ -102,12 +102,23 @@ export async function POST(request: NextRequest) {
     skipDuplicates: true,
   });
 
-  // Build per-company summary
+  // Build per-company summary including selected companies with 0 contacts
   const companyMap = new Map<string, number>();
   for (const c of contacts) {
     const name = c.companyName || c.companyId;
     companyMap.set(name, (companyMap.get(name) || 0) + 1);
   }
+
+  // Add selected companies that have no contacts in the upload
+  const selectedDecisions = await prisma.companyDecision.findMany({
+    where: { campaignId, selected: true },
+  });
+  for (const d of selectedDecisions) {
+    if (!companyMap.has(d.companyName)) {
+      companyMap.set(d.companyName, 0);
+    }
+  }
+
   const companySummary = Array.from(companyMap.entries())
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
