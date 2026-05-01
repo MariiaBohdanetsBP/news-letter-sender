@@ -46,20 +46,32 @@ export async function PUT(
         });
         if (matched.length > 0) {
           for (const m of matched) {
-            subscriberData.push({ email: m.email, name: m.contactName ?? m.companyName });
+            // Basic email validation before sending to Ecomail
+            const email = m.email?.trim().toLowerCase();
+            if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+              subscriberData.push({ email, name: m.contactName ?? m.companyName });
+            }
           }
         } else {
           missingCompanies.push(d.companyName);
         }
       }
 
-      if (subscriberData.length > 0) {
+      // Deduplicate by email
+      const seen = new Set<string>();
+      const uniqueSubscribers = subscriberData.filter((s) => {
+        if (seen.has(s.email)) return false;
+        seen.add(s.email);
+        return true;
+      });
+
+      if (uniqueSubscribers.length > 0) {
         // Sync only matched contacts to Ecomail
         const ecoRes = await fetch(`https://api2.ecomailapp.cz/lists/${ecomailListId}/subscribe-bulk`, {
           method: "POST",
           headers: { "Content-Type": "application/json", key: ecomailKey },
           body: JSON.stringify({
-            subscriber_data: subscriberData,
+            subscriber_data: uniqueSubscribers,
             update_existing: true,
             resubscribe: true,
           }),
@@ -68,7 +80,7 @@ export async function PUT(
         if (ecoRes.ok) {
           ecomailStatus = "sent";
           const foundCount = decisions.length - missingCompanies.length;
-          ecomailMessage = `${subscriberData.length} emailů z ${foundCount} firem synchronizováno do Ecomail`;
+          ecomailMessage = `${uniqueSubscribers.length} emailů z ${foundCount} firem synchronizováno do Ecomail`;
         } else {
           const errBody = await ecoRes.text().catch(() => "");
           ecomailStatus = "error";
