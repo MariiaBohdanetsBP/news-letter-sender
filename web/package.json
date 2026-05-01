@@ -4,13 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "npx prisma@6.19.3 generate && next build",
     "start": "next start",
     "lint": "eslint",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "npx tsx prisma/seed.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "node node_modules/prisma/build/index.js generate"
   },
   "dependencies": {
     "@prisma/client": "6.19.3",
@@ -42,5 +42,9 @@
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
+  },
+  "overrides": {
+    "prisma": "6.19.3",
+    "@prisma/client": "6.19.3"
   }
 }
