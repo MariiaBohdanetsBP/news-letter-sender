@@ -30,6 +30,16 @@ export async function PUT(
 
   if (ecomailKey && ecomailListId && decisions.length > 0) {
     try {
+      // Step 1: Remove all existing subscribers from the list (replace mode)
+      const removeRes = await fetch(`https://api2.ecomailapp.cz/lists/${ecomailListId}/subscribers`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", key: ecomailKey },
+      });
+      if (!removeRes.ok && removeRes.status !== 404) {
+        console.warn(`Ecomail list clear returned ${removeRes.status}`);
+      }
+
+      // Step 2: Add selected companies as subscribers
       const subscriberData = decisions.map((d) => ({
         email: `kontakt@${d.companyName.toLowerCase().replace(/[^a-z0-9]/g, "")}.cz`,
         name: d.companyName,
@@ -38,10 +48,7 @@ export async function PUT(
 
       const ecoRes = await fetch(`https://api2.ecomailapp.cz/lists/${ecomailListId}/subscribe-bulk`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          key: ecomailKey,
-        },
+        headers: { "Content-Type": "application/json", key: ecomailKey },
         body: JSON.stringify({
           subscriber_data: subscriberData,
           update_existing: true,
