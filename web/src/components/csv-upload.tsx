@@ -35,8 +35,10 @@ export function CsvUpload({ campaignId }: CsvUploadProps) {
       formData.append("file", file);
       formData.append("campaignId", campaignId);
 
+      const token = localStorage.getItem("token");
       const res = await fetch("/api/contacts/upload", {
         method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
 
@@ -60,7 +62,7 @@ export function CsvUpload({ campaignId }: CsvUploadProps) {
         {uploading ? "Nahrávám..." : "📄 Nahrát CSV kontakty"}
         <input
           type="file"
-          accept=".csv"
+          accept=".csv,.xlsx,.xls"
           onChange={handleUpload}
           disabled={uploading || !campaignId}
           className="hidden"
