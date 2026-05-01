@@ -103,30 +103,51 @@ export async function POST(request: NextRequest) {
   });
 
   // Build per-company summary including selected companies with 0 contacts
-  // Use companyId for matching (CSV client_id_muza = Raynet company ID)
-  const companyIdCountMap = new Map<string, number>();
-  const companyIdNameMap = new Map<string, string>();
+  // Match by checking if names overlap (CSV may have short names vs full Raynet names)
+  const contactsByName = new Map<string, { count: number; displayName: string }>();
   for (const c of contacts) {
-    companyIdCountMap.set(c.companyId, (companyIdCountMap.get(c.companyId) || 0) + 1);
-    if (!companyIdNameMap.has(c.companyId)) {
-      companyIdNameMap.set(c.companyId, c.companyName || c.companyId);
+    const key = (c.companyName || c.companyId).toLowerCase();
+    const existing = contactsByName.get(key);
+    if (existing) {
+      existing.count++;
+    } else {
+      contactsByName.set(key, { count: 1, displayName: c.companyName || c.companyId });
     }
   }
 
-  // Add selected companies that have no contacts in the upload
+  // Add selected companies, matching by substring to handle short vs full names
   const selectedDecisions = await prisma.companyDecision.findMany({
     where: { campaignId, selected: true },
   });
+
+  const companySummary: { name: string; count: number }[] = [];
+  const matchedKeys = new Set<string>();
+
   for (const d of selectedDecisions) {
-    if (!companyIdCountMap.has(d.companyId)) {
-      companyIdCountMap.set(d.companyId, 0);
-      companyIdNameMap.set(d.companyId, d.companyName);
+    const dName = d.companyName.toLowerCase();
+    // Find matching contact group: CSV name is contained in decision name or vice versa
+    let found = false;
+    for (const [key, val] of contactsByName) {
+      if (dName.includes(key) || key.includes(dName)) {
+        companySummary.push({ name: d.companyName, count: val.count });
+        matchedKeys.add(key);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      companySummary.push({ name: d.companyName, count: 0 });
     }
   }
 
-  const companySummary = Array.from(companyIdCountMap.entries())
-    .map(([id, count]) => ({ name: companyIdNameMap.get(id) || id, count }))
-    .sort((a, b) => b.count - a.count);
+  // Add any CSV companies that weren't matched to a decision
+  for (const [key, val] of contactsByName) {
+    if (!matchedKeys.has(key)) {
+      companySummary.push({ name: val.displayName, count: val.count });
+    }
+  }
+
+  companySummary.sort((a, b) => b.count - a.count);
 
   return NextResponse.json({
     imported: contacts.length,
