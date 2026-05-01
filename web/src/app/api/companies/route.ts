@@ -33,7 +33,7 @@ async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: 
   const limit = 100;
 
   // Raynet Basic auth: "user@email.cz:apiToken"
-  const credentials = Buffer.from(`${apiUser}:${apiKey}`).toString("base64");
+  const credentials = btoa(`${apiUser}:${apiKey}`);
 
   while (true) {
     const res = await fetch(
