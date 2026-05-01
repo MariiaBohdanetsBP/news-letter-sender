@@ -34,7 +34,7 @@ export async function PUT(
       });
 
       // Build subscriber list using fuzzy name matching (CSV names vs Raynet names)
-      const subscriberData: { email: string; name: string; status: string }[] = [];
+      const subscriberData: { email: string; name: string }[] = [];
       const missingCompanies: string[] = [];
 
       for (const d of decisions) {
@@ -46,7 +46,7 @@ export async function PUT(
         });
         if (matched.length > 0) {
           for (const m of matched) {
-            subscriberData.push({ email: m.email, name: m.contactName ?? m.companyName, status: "subscribed" });
+            subscriberData.push({ email: m.email, name: m.contactName ?? m.companyName });
           }
         } else {
           missingCompanies.push(d.companyName);
@@ -70,8 +70,10 @@ export async function PUT(
           const foundCount = decisions.length - missingCompanies.length;
           ecomailMessage = `${subscriberData.length} emailů z ${foundCount} firem synchronizováno do Ecomail`;
         } else {
+          const errBody = await ecoRes.text().catch(() => "");
           ecomailStatus = "error";
-          ecomailMessage = `Ecomail vrátil chybu ${ecoRes.status}`;
+          ecomailMessage = `Ecomail vrátil chybu ${ecoRes.status}: ${errBody.slice(0, 200)}`;
+          console.error("Ecomail error:", ecoRes.status, errBody);
         }
       } else {
         ecomailStatus = "error";
