@@ -30,14 +30,14 @@ async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: 
 
   const companies: RaynetCompany[] = [];
   let offset = 0;
-  const limit = 1000; // single large batch to fit Vercel 10s timeout
+  const limit = 200; // Raynet max per request
 
   // Raynet Basic auth: "user@email.cz:apiToken"
   const credentials = btoa(`${apiUser}:${apiKey}`);
 
-  // Fetch up to 1000 companies (Vercel free tier has 10s timeout)
+  // Fetch companies (Raynet max limit is 200 per request)
   const res = await fetch(
-    `https://app.raynet.cz/api/v2/company/?offset=${offset}&limit=${limit}&status[eq]=ACTIVE`,
+    `https://app.raynet.cz/api/v2/company/?offset=${offset}&limit=${limit}`,
     {
       headers: {
         Authorization: `Basic ${credentials}`,
@@ -55,7 +55,10 @@ async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: 
   const json = await res.json();
 
   if (json.data?.length) {
+    // Only include active companies (A_POTENTIAL = prospect, B_ACTUAL = client)
+    const activeStates = new Set(["A_POTENTIAL", "B_ACTUAL"]);
     for (const c of json.data) {
+      if (!activeStates.has(c.state)) continue;
       companies.push({
         companyId: String(c.id),
         companyName: c.name ?? `Company #${c.id}`,
