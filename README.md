@@ -265,12 +265,118 @@ npx prisma db seed        # Create default users
 npm run dev               # Start on localhost:3000
 ```
 
-### Deploy to Vercel
+### Step-by-Step: Fork, Setup & Deploy to Vercel
+
+#### 1️⃣ Clone the repo and push to your own GitHub
 
 ```bash
+# Clone the original repository
+git clone https://github.com/maksym-mishchenko/NewsLetterSender.git
+cd NewsLetterSender
+
+# Remove the original remote
+git remote remove origin
+
+# Create a new repo on YOUR GitHub (via browser or CLI)
+# Then connect it:
+git remote add origin https://github.com/YOUR_USERNAME/NewsLetterSender.git
+git push -u origin main
+```
+
+> 💡 Alternatively, click **"Fork"** on GitHub — this copies the repo to your account in one click.
+
+---
+
+#### 2️⃣ Create a Vercel account
+
+1. Go to [vercel.com](https://vercel.com) and click **"Sign Up"**
+2. Sign up with your **GitHub account** (recommended — enables auto-deploy)
+3. Authorize Vercel to access your GitHub repositories
+4. You're in! Free tier is enough for this project.
+
+---
+
+#### 3️⃣ Create a Neon PostgreSQL database
+
+1. Go to [neon.tech](https://neon.tech) and sign up (free tier)
+2. Click **"Create Project"** → name it `newsletter-sender`
+3. Copy the **connection string** — it looks like:
+   ```
+   postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require
+   ```
+4. You'll paste this as `DATABASE_URL` in Vercel (next step)
+
+---
+
+#### 4️⃣ Deploy to Vercel
+
+**Option A: Via Vercel Dashboard (easiest)**
+
+1. Go to [vercel.com/new](https://vercel.com/new)
+2. Click **"Import Git Repository"** → select your `NewsLetterSender` repo
+3. Set the **Root Directory** to `web` (important!)
+4. Under **Environment Variables**, add:
+
+   | Key | Value |
+   |-----|-------|
+   | `DATABASE_URL` | Your Neon connection string |
+   | `JWT_SECRET` | Any random string (e.g. `openssl rand -hex 32`) |
+   | `RAYNET_API_USER` | Your Raynet email |
+   | `RAYNET_API_KEY` | Your Raynet API key |
+   | `RAYNET_INSTANCE_NAME` | Your Raynet instance |
+   | `ECOMAIL_API_KEY` | Your Ecomail API key |
+   | `ECOMAIL_LIST_ID` | Your Ecomail list ID (e.g. `1`) |
+
+5. Click **"Deploy"** → wait ~60 seconds
+6. Your app is live at `https://your-project.vercel.app` 🎉
+
+**Option B: Via Vercel CLI**
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Login
+vercel login
+
+# Deploy (from project root)
 cd web
 vercel --prod --yes
 ```
+
+> When prompted, set Root Directory to `web` and framework to Next.js.
+
+---
+
+#### 5️⃣ Run database migrations & seed
+
+After the first deploy, you need to set up the database:
+
+```bash
+# Option A: Run locally pointing at Neon (set DATABASE_URL in .env)
+cd web
+npx prisma migrate deploy   # Apply all migrations
+npx prisma db seed           # Create default user accounts
+
+# Option B: Use Vercel CLI to run in production context
+vercel env pull .env.local   # Pull production env vars
+npx prisma migrate deploy
+npx prisma db seed
+```
+
+---
+
+#### 6️⃣ Verify it works
+
+1. Open your Vercel URL (e.g. `https://newsletter-sender.vercel.app`)
+2. Login with `admin` / (password from seed.ts)
+3. You should see the campaign dashboard with companies loading from Raynet
+
+---
+
+#### 🔁 Auto-Deploy on Push
+
+Once connected, every `git push` to `main` will auto-deploy to Vercel. No manual steps needed!
 
 ---
 
