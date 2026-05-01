@@ -102,9 +102,20 @@ export async function POST(request: NextRequest) {
     skipDuplicates: true,
   });
 
+  // Build per-company summary
+  const companyMap = new Map<string, number>();
+  for (const c of contacts) {
+    const name = c.companyName || c.companyId;
+    companyMap.set(name, (companyMap.get(name) || 0) + 1);
+  }
+  const companySummary = Array.from(companyMap.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+
   return NextResponse.json({
     imported: contacts.length,
     errors: errors.length,
     errorDetails: errors.slice(0, 10),
+    companySummary,
   });
 }

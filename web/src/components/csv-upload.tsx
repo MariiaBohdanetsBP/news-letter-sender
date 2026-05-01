@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 
+interface CompanySummary {
+  name: string;
+  count: number;
+}
+
 interface UploadResult {
   imported: number;
   errors: number;
   errorDetails?: string[];
+  companySummary?: CompanySummary[];
 }
 
 interface CsvUploadProps {
@@ -69,10 +75,21 @@ export function CsvUpload({ campaignId }: CsvUploadProps) {
         />
       </label>
       {result && (
-        <span className="text-xs text-green-400">
-          ✓ {result.imported} kontaktů nahráno
-          {result.errors > 0 && ` (${result.errors} chyb)`}
-        </span>
+        <div className="text-xs">
+          <span className="text-green-400">
+            ✓ {result.imported} kontaktů nahráno
+            {result.errors > 0 && ` (${result.errors} chyb)`}
+          </span>
+          {result.companySummary && result.companySummary.length > 0 && (
+            <div className="mt-1 max-h-32 overflow-y-auto text-zinc-400 space-y-0.5">
+              {result.companySummary.map((c) => (
+                <div key={c.name}>
+                  {c.name}: <span className="text-zinc-200">{c.count} příjemců</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       )}
       {error && <span className="text-xs text-red-400">✗ {error}</span>}
     </div>
