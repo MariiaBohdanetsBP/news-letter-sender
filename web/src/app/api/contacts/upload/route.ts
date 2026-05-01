@@ -103,10 +103,14 @@ export async function POST(request: NextRequest) {
   });
 
   // Build per-company summary including selected companies with 0 contacts
-  const companyMap = new Map<string, number>();
+  // Use companyId for matching (CSV client_id_muza = Raynet company ID)
+  const companyIdCountMap = new Map<string, number>();
+  const companyIdNameMap = new Map<string, string>();
   for (const c of contacts) {
-    const name = c.companyName || c.companyId;
-    companyMap.set(name, (companyMap.get(name) || 0) + 1);
+    companyIdCountMap.set(c.companyId, (companyIdCountMap.get(c.companyId) || 0) + 1);
+    if (!companyIdNameMap.has(c.companyId)) {
+      companyIdNameMap.set(c.companyId, c.companyName || c.companyId);
+    }
   }
 
   // Add selected companies that have no contacts in the upload
@@ -114,13 +118,14 @@ export async function POST(request: NextRequest) {
     where: { campaignId, selected: true },
   });
   for (const d of selectedDecisions) {
-    if (!companyMap.has(d.companyName)) {
-      companyMap.set(d.companyName, 0);
+    if (!companyIdCountMap.has(d.companyId)) {
+      companyIdCountMap.set(d.companyId, 0);
+      companyIdNameMap.set(d.companyId, d.companyName);
     }
   }
 
-  const companySummary = Array.from(companyMap.entries())
-    .map(([name, count]) => ({ name, count }))
+  const companySummary = Array.from(companyIdCountMap.entries())
+    .map(([id, count]) => ({ name: companyIdNameMap.get(id) || id, count }))
     .sort((a, b) => b.count - a.count);
 
   return NextResponse.json({
