@@ -55,10 +55,9 @@ async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: 
   const json = await res.json();
 
   if (json.data?.length) {
-    // Only include active companies (A_POTENTIAL = prospect, B_ACTUAL = client)
-    const activeStates = new Set(["A_POTENTIAL", "B_ACTUAL"]);
+    // Only include actual clients (B_ACTUAL)
     for (const c of json.data) {
-      if (!activeStates.has(c.state)) continue;
+      if (c.state !== "B_ACTUAL") continue;
       companies.push({
         companyId: String(c.id),
         companyName: c.name ?? `Company #${c.id}`,
