@@ -55,9 +55,12 @@ async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: 
   const json = await res.json();
 
   if (json.data?.length) {
-    // Only include actual clients (B_ACTUAL)
+    // Only include actual clients (B_ACTUAL) with real owners
+    const excludedOwners = new Set(["Import Import", "RAYNET CRM"]);
     for (const c of json.data) {
       if (c.state !== "B_ACTUAL") continue;
+      const ownerName = c.owner?.fullName ?? "";
+      if (excludedOwners.has(ownerName)) continue;
       companies.push({
         companyId: String(c.id),
         companyName: c.name ?? `Company #${c.id}`,
