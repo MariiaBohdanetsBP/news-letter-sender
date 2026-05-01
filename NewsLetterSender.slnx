@@ -1,7 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/NewsLetterSender.Api/NewsLetterSender.Api.csproj" />
-    <Project Path="src/NewsLetterSender.Core/NewsLetterSender.Core.csproj" />
-    <Project Path="src/NewsLetterSender.Infrastructure/NewsLetterSender.Infrastructure.csproj" />
-  </Folder>
-</Solution>
