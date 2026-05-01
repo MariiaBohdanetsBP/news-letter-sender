@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
 
   const companies: RaynetCompany[] = [];
   const limit = 200;
-  const excludedOwners = new Set(["Import Import", "RAYNET CRM"]);
   const credentials = Buffer.from(`${apiUser}:${apiKey}`).toString("base64");
 
   let offset = 0;
@@ -52,13 +51,14 @@ export async function GET(request: NextRequest) {
     if (json.data?.length) {
       for (const c of json.data) {
         if (c.state !== "B_ACTUAL") continue;
-        const ownerName = c.owner?.fullName ?? "";
-        if (excludedOwners.has(ownerName)) continue;
+        // ID_klienta_97be5 = "ID klienta v Muze" — if set, it's a Muza client
+        const muzaId = c.customFields?.ID_klienta_97be5;
+        const isMuza = muzaId != null && muzaId !== "" && muzaId !== 0;
         companies.push({
           companyId: String(c.id),
           companyName: c.name ?? `Company #${c.id}`,
           accountManager: c.owner?.fullName ?? "Nepřiřazeno",
-          systemType: c.category?.value?.includes("BP1") ? "BP1" : "Muza",
+          systemType: isMuza ? "Muza" : "BPM",
           category: c.category?.value ?? null,
         });
       }
