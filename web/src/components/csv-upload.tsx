@@ -174,7 +174,7 @@ export function CsvUpload({ campaignId, onSend }: CsvUploadProps) {
                     className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
                   >
                     <Zap className="h-4 w-4" />
-                    Odeslat
+                    Aktualizovat seznam kontaktů
                   </button>
                 )}
               </div>
