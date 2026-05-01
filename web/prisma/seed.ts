@@ -8,10 +8,8 @@ async function main() {
 
   // Create users
   const users = [
-    { username: "admin", password: "admin123", displayName: "Administrátor", role: "Admin" as const },
-    { username: "mariya", password: "pass123", displayName: "Mariya Ivanova", role: "AccountManager" as const },
-    { username: "jan.novak", password: "pass123", displayName: "Jan Novák", role: "AccountManager" as const },
-    { username: "petra", password: "pass123", displayName: "Petra Horáková", role: "AccountManager" as const },
+    { username: "admin", password: "Nw$L3tt3r!Adm1n", displayName: "Administrátor", role: "Admin" as const },
+    { username: "manager", password: "Nw$L3tt3r!Mgr42", displayName: "Account Manager", role: "AccountManager" as const },
   ];
 
   for (const u of users) {
