@@ -37,7 +37,7 @@ async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: 
 
   // Fetch up to 1000 companies (Vercel free tier has 10s timeout)
   const res = await fetch(
-    `https://app.raynet.cz/api/v2/company/?offset=${offset}&limit=${limit}`,
+    `https://app.raynet.cz/api/v2/company/?offset=${offset}&limit=${limit}&status[eq]=ACTIVE`,
     {
       headers: {
         Authorization: `Basic ${credentials}`,
