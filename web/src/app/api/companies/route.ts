@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
           companyId: String(c.id),
           companyName: c.name ?? `Company #${c.id}`,
           accountManager: c.owner?.fullName ?? "Nepřiřazeno",
-          systemType: isMuza ? "Muza" : "BPM",
+          systemType: isMuza ? "Muza" : "BP1",
           category: c.category?.value ?? null,
         });
       }
