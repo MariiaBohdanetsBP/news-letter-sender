@@ -44,8 +44,10 @@ export async function PUT(
         emailsByCompany.set(c.companyId, list);
       }
 
-      // Build subscriber list: use real emails if available, fallback to generated
+      // Build subscriber list: ONLY companies with real emails from CSV
       const subscriberData: { email: string; name: string; status: string }[] = [];
+      const missingCompanies: string[] = [];
+
       for (const d of decisions) {
         const real = emailsByCompany.get(d.companyId);
         if (real?.length) {
@@ -53,31 +55,38 @@ export async function PUT(
             subscriberData.push({ email: r.email, name: r.name, status: "subscribed" });
           }
         } else {
-          subscriberData.push({
-            email: `kontakt@${d.companyName.toLowerCase().replace(/[^a-z0-9]/g, "")}.cz`,
-            name: d.companyName,
-            status: "subscribed",
-          });
+          missingCompanies.push(d.companyName);
         }
       }
 
-      // Add selected companies as subscribers (update_existing handles duplicates)
-      const ecoRes = await fetch(`https://api2.ecomailapp.cz/lists/${ecomailListId}/subscribe-bulk`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", key: ecomailKey },
-        body: JSON.stringify({
-          subscriber_data: subscriberData,
-          update_existing: true,
-          resubscribe: true,
-        }),
-      });
+      if (subscriberData.length > 0) {
+        // Sync only matched contacts to Ecomail
+        const ecoRes = await fetch(`https://api2.ecomailapp.cz/lists/${ecomailListId}/subscribe-bulk`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", key: ecomailKey },
+          body: JSON.stringify({
+            subscriber_data: subscriberData,
+            update_existing: true,
+            resubscribe: true,
+          }),
+        });
 
-      if (ecoRes.ok) {
-        ecomailStatus = "sent";
-        ecomailMessage = `${decisions.length} kontaktů synchronizováno do Ecomail`;
+        if (ecoRes.ok) {
+          ecomailStatus = "sent";
+          const foundCount = decisions.length - missingCompanies.length;
+          ecomailMessage = `${subscriberData.length} emailů z ${foundCount} firem synchronizováno do Ecomail`;
+        } else {
+          ecomailStatus = "error";
+          ecomailMessage = `Ecomail vrátil chybu ${ecoRes.status}`;
+        }
       } else {
         ecomailStatus = "error";
-        ecomailMessage = `Ecomail vrátil chybu ${ecoRes.status}`;
+        ecomailMessage = "Žádné emaily nalezeny v CSV — nic k odeslání";
+      }
+
+      // Attach warning about missing companies
+      if (missingCompanies.length > 0) {
+        ecomailMessage += ` | ⚠️ ${missingCompanies.length} firem bez emailu v CSV: ${missingCompanies.slice(0, 10).join(", ")}${missingCompanies.length > 10 ? "..." : ""}`;
       }
     } catch (error) {
       ecomailStatus = "error";

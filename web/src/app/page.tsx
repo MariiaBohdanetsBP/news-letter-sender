@@ -59,7 +59,7 @@ export default function DashboardPage() {
     }
   }, [authLoading, user, router]);
 
-  // Fetch campaigns + history + companies from API
+  // Fetch campaigns + history + companies from Raynet
   const fetchCampaigns = useCallback(async () => {
     try {
       setError(null);
@@ -70,7 +70,6 @@ export default function DashboardPage() {
       ]);
       setCampaigns(active);
       setHistory(sent);
-      // Map Raynet companies to CompanyDecision format for the table
       setCompanies(
         raynetCompanies.map((c) => ({
           companyId: c.companyId,

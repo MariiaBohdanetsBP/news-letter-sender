@@ -1,41 +1,28 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getUser, unauthorized } from "@/lib/auth";
 import type { RaynetCompany } from "@/types";
 
-const MOCK_COMPANIES: RaynetCompany[] = [
-  { companyId: "R001", companyName: "Alza.cz", accountManager: "Mariya Ivanova", systemType: "Muza", category: null },
-  { companyId: "R002", companyName: "Mall.cz", accountManager: "Jan Novák", systemType: "BP1", category: null },
-  { companyId: "R003", companyName: "Rohlik.cz", accountManager: "Mariya Ivanova", systemType: "Muza", category: null },
-  { companyId: "R004", companyName: "Zásilkovna", accountManager: "Petra Horáková", systemType: "BP1", category: null },
-  { companyId: "R005", companyName: "Notino", accountManager: "Jan Novák", systemType: "Muza", category: null },
-  { companyId: "R006", companyName: "CZC.cz", accountManager: "Petra Horáková", systemType: "BP1", category: null },
-  { companyId: "R007", companyName: "Lékárna.cz", accountManager: "Mariya Ivanova", systemType: "Muza", category: null },
-  { companyId: "R008", companyName: "Knihy Dobrovský", accountManager: "Jan Novák", systemType: "BP1", category: null },
-  { companyId: "R009", companyName: "Pilulka", accountManager: "Petra Horáková", systemType: "Muza", category: null },
-  { companyId: "R010", companyName: "Bonami", accountManager: "Mariya Ivanova", systemType: "BP1", category: null },
-  { companyId: "R011", companyName: "Datart", accountManager: "Jan Novák", systemType: "Muza", category: null },
-  { companyId: "R012", companyName: "Mountfield", accountManager: "Petra Horáková", systemType: "BP1", category: null },
-  { companyId: "R013", companyName: "Okay.cz", accountManager: "Mariya Ivanova", systemType: "Muza", category: null },
-  { companyId: "R014", companyName: "Sportisimo", accountManager: "Jan Novák", systemType: "BP1", category: null },
-  { companyId: "R015", companyName: "Tescoma", accountManager: "Petra Horáková", systemType: "Muza", category: null },
-];
+// GET /api/companies — fetches active companies from Raynet CRM
+export async function GET(request: NextRequest) {
+  const user = await getUser(request);
+  if (!user) return unauthorized();
 
-async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: "raynet" | "mock" }> {
-    const apiUser = process.env.RAYNET_API_USER?.trim();
+  const apiUser = process.env.RAYNET_API_USER?.trim();
   const apiKey = process.env.RAYNET_API_KEY?.trim();
   const instanceName = process.env.RAYNET_INSTANCE_NAME?.trim();
 
   if (!apiUser || !apiKey || !instanceName) {
-    return { companies: MOCK_COMPANIES, source: "mock" };
+    return NextResponse.json(
+      { error: "Raynet credentials not configured" },
+      { status: 500 }
+    );
   }
 
   const companies: RaynetCompany[] = [];
-  const limit = 200; // Raynet max per request
+  const limit = 200;
   const excludedOwners = new Set(["Import Import", "RAYNET CRM"]);
-
-  // Raynet Basic auth: "user@email.cz:apiToken"
   const credentials = Buffer.from(`${apiUser}:${apiKey}`).toString("base64");
 
-  // Paginate through all companies
   let offset = 0;
   let totalCount = Infinity;
 
@@ -54,7 +41,10 @@ async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: 
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
-      throw new Error(`Raynet API ${res.status}: ${text.slice(0, 200)}`);
+      return NextResponse.json(
+        { error: `Raynet API ${res.status}: ${text.slice(0, 200)}` },
+        { status: 502 }
+      );
     }
     const json = await res.json();
     totalCount = json.totalCount ?? 0;
@@ -77,20 +67,5 @@ async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: 
     offset += limit;
   }
 
-  return { companies, source: "raynet" };
-}
-
-export async function GET() {
-  try {
-    const { companies, source } = await fetchFromRaynet();
-    return NextResponse.json(companies, {
-      headers: { "X-Data-Source": source },
-    });
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    console.error("Raynet fetch failed, using mock:", msg);
-    return NextResponse.json(MOCK_COMPANIES, {
-      headers: { "X-Data-Source": "mock-fallback", "X-Error": msg.slice(0, 200) },
-    });
-  }
+  return NextResponse.json(companies);
 }
