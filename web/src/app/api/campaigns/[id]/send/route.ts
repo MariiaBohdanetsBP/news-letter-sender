@@ -23,8 +23,11 @@ export async function PUT(
   });
 
   // Sync to Ecomail if configured
+  let ecomailStatus: "sent" | "skipped" | "error" = "skipped";
+  let ecomailMessage = "Ecomail API klíč není nastaven — přeskočeno";
   const ecomailKey = process.env.ECOMAIL_API_KEY;
   const ecomailListId = process.env.ECOMAIL_LIST_ID;
+
   if (ecomailKey && ecomailListId && decisions.length > 0) {
     try {
       const subscriberData = decisions.map((d) => ({
@@ -33,7 +36,7 @@ export async function PUT(
         status: "subscribed",
       }));
 
-      await fetch(`https://api2.ecomailapp.cz/lists/${ecomailListId}/subscribe-bulk`, {
+      const ecoRes = await fetch(`https://api2.ecomailapp.cz/lists/${ecomailListId}/subscribe-bulk`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -45,10 +48,21 @@ export async function PUT(
           resubscribe: true,
         }),
       });
+
+      if (ecoRes.ok) {
+        ecomailStatus = "sent";
+        ecomailMessage = `${decisions.length} kontaktů synchronizováno do Ecomail`;
+      } else {
+        ecomailStatus = "error";
+        ecomailMessage = `Ecomail vrátil chybu ${ecoRes.status}`;
+      }
     } catch (error) {
+      ecomailStatus = "error";
+      ecomailMessage = `Ecomail sync selhal: ${error instanceof Error ? error.message : "unknown"}`;
       console.error("Ecomail sync failed:", error);
-      // Don't block the send on Ecomail failure
     }
+  } else if (ecomailKey && ecomailListId && decisions.length === 0) {
+    ecomailMessage = "Žádné firmy vybrány — nic k synchronizaci";
   }
 
   // Mark as sent
@@ -62,7 +76,7 @@ export async function PUT(
       campaignId: id,
       action: "CampaignSent",
       performedBy: user.name,
-      details: `Marked campaign '${campaign.name}' as sent (${decisions.length} companies synced to Ecomail)`,
+      details: `Marked campaign '${campaign.name}' as sent (${decisions.length} companies, ecomail: ${ecomailStatus})`,
     },
   });
 
@@ -72,5 +86,6 @@ export async function PUT(
     status: updated.status,
     planDate: updated.planDate?.toISOString().split("T")[0] ?? null,
     createdAt: updated.createdAt.toISOString(),
+    ecomail: { status: ecomailStatus, message: ecomailMessage },
   });
 }

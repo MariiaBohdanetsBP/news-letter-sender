@@ -9,6 +9,7 @@ Interní nástroj pro Benefit Plus — správa emailových kampaní pro account 
 ## 🚀 Quick Start (local dev)
 
 ### Requirements
+
 - Node.js 18+
 - A Neon PostgreSQL database (free at [neon.tech](https://neon.tech))
 
@@ -25,12 +26,12 @@ npm run dev            # http://localhost:3000
 
 ### Test credentials
 
-| User | Password | Role |
-|------|----------|------|
-| admin | admin123 | Administrátor |
-| mariya | pass123 | Account Manager |
-| jan.novak | pass123 | Account Manager |
-| petra | pass123 | Account Manager |
+| User      | Password | Role            |
+| --------- | -------- | --------------- |
+| admin     | admin123 | Administrátor   |
+| mariya    | pass123  | Account Manager |
+| jan.novak | pass123  | Account Manager |
+| petra     | pass123  | Account Manager |
 
 ---
 
@@ -38,11 +39,11 @@ npm run dev            # http://localhost:3000
 
 All integrations work in **mock mode** by default. Add API keys to `.env` to enable real connections.
 
-| Service | Env vars | Purpose |
-|---------|----------|---------|
-| **Raynet CRM** | `RAYNET_API_KEY`, `RAYNET_INSTANCE` | Company list |
-| **Ecomail** | `ECOMAIL_API_KEY`, `ECOMAIL_LIST_ID` | Email delivery |
-| **Power BI** | _(Excel export)_ | Reporting via `.xlsx` download |
+| Service        | Env vars                             | Purpose                        |
+| -------------- | ------------------------------------ | ------------------------------ |
+| **Raynet CRM** | `RAYNET_API_KEY`, `RAYNET_INSTANCE`  | Company list                   |
+| **Ecomail**    | `ECOMAIL_API_KEY`, `ECOMAIL_LIST_ID` | Email delivery                 |
+| **Power BI**   | _(Excel export)_                     | Reporting via `.xlsx` download |
 
 ---
 

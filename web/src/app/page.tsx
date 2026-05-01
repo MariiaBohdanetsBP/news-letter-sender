@@ -206,6 +206,13 @@ export default function DashboardPage() {
       setActiveCampaignId(null);
       setSelectedIds(new Set());
       setSendConfirmOpen(false);
+
+      // Show Ecomail status feedback
+      const eco = (sent as unknown as Record<string, unknown>).ecomail as { status: string; message: string } | undefined;
+      if (eco) {
+        const icon = eco.status === "sent" ? "✅" : eco.status === "skipped" ? "⚠️" : "❌";
+        alert(`${icon} ${eco.message}`);
+      }
     } catch (err) {
       console.error("Failed to send campaign:", err);
       alert("Failed to mark campaign as sent");

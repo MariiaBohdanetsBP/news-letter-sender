@@ -19,30 +19,39 @@ const MOCK_COMPANIES: RaynetCompany[] = [
   { companyId: "R015", companyName: "Tescoma", accountManager: "Petra Horáková", systemType: "Muza", category: null },
 ];
 
-async function fetchFromRaynet(): Promise<RaynetCompany[]> {
+async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: "raynet" | "mock" }> {
+  const apiUser = process.env.RAYNET_API_USER;
   const apiKey = process.env.RAYNET_API_KEY;
   const instanceName = process.env.RAYNET_INSTANCE_NAME;
 
-  if (!apiKey || !instanceName) return MOCK_COMPANIES;
+  if (!apiUser || !apiKey || !instanceName) {
+    return { companies: MOCK_COMPANIES, source: "mock" };
+  }
 
   const companies: RaynetCompany[] = [];
   let offset = 0;
   const limit = 100;
 
+  // Raynet Basic auth: "user@email.cz:apiToken"
+  const credentials = Buffer.from(`${apiUser}:${apiKey}`).toString("base64");
+
   while (true) {
     const res = await fetch(
-      `https://app.raynet.cz/api/v2/company/?offset=${offset}&limit=${limit}&status[eq]=ACTIVE`,
+      `https://app.raynet.cz/api/v2/company/?offset=${offset}&limit=${limit}`,
       {
         headers: {
-          Authorization: `Basic ${btoa(`${apiKey}:X`)}`,
+          Authorization: `Basic ${credentials}`,
           "X-Instance-Name": instanceName,
           Accept: "application/json",
         },
-        next: { revalidate: 300 }, // cache 5 min
+        next: { revalidate: 300 },
       }
     );
 
-    if (!res.ok) throw new Error(`Raynet API error: ${res.status}`);
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`Raynet API ${res.status}: ${text.slice(0, 200)}`);
+    }
     const json = await res.json();
     if (!json.data?.length) break;
 
@@ -60,15 +69,19 @@ async function fetchFromRaynet(): Promise<RaynetCompany[]> {
     if (json.data.length < limit) break;
   }
 
-  return companies;
+  return { companies, source: "raynet" };
 }
 
 export async function GET() {
   try {
-    const companies = await fetchFromRaynet();
-    return NextResponse.json(companies);
+    const { companies, source } = await fetchFromRaynet();
+    return NextResponse.json(companies, {
+      headers: { "X-Data-Source": source },
+    });
   } catch (error) {
-    console.error("Failed to fetch companies:", error);
-    return NextResponse.json(MOCK_COMPANIES);
+    console.error("Raynet fetch failed, using mock:", error);
+    return NextResponse.json(MOCK_COMPANIES, {
+      headers: { "X-Data-Source": "mock-fallback" },
+    });
   }
 }
