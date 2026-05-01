@@ -2,16 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUser, unauthorized } from "@/lib/auth";
 
-// POST /api/contacts/upload — upload CSV with contacts
+// POST /api/contacts/upload — upload CSV with contacts for a specific campaign
 export async function POST(request: NextRequest) {
   const user = await getUser(request);
   if (!user) return unauthorized();
 
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
+  const campaignId = formData.get("campaignId") as string | null;
+
+  if (!campaignId) {
+    return NextResponse.json({ error: "campaignId is required" }, { status: 400 });
+  }
 
   if (!file || !file.name.endsWith(".csv")) {
     return NextResponse.json({ error: "CSV file required" }, { status: 400 });
+  }
+
+  // Verify campaign exists
+  const campaign = await prisma.campaign.findUnique({ where: { id: campaignId } });
+  if (!campaign) {
+    return NextResponse.json({ error: "Campaign not found" }, { status: 404 });
   }
 
   const text = await file.text();
@@ -63,10 +74,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No valid rows found", details: errors }, { status: 400 });
   }
 
-  // Upsert contacts (replace mode — delete old, insert new)
-  await prisma.contact.deleteMany({});
+  // Replace contacts for this campaign only
+  await prisma.contact.deleteMany({ where: { campaignId } });
   await prisma.contact.createMany({
     data: contacts.map((c) => ({
+      campaignId,
       companyId: c.companyId,
       companyName: c.companyName,
       email: c.email,

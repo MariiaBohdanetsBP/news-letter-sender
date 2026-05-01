@@ -8,7 +8,11 @@ interface UploadResult {
   errorDetails?: string[];
 }
 
-export function CsvUpload() {
+interface CsvUploadProps {
+  campaignId?: string;
+}
+
+export function CsvUpload({ campaignId }: CsvUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState<UploadResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -17,6 +21,11 @@ export function CsvUpload() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!campaignId) {
+      setError("Nejprve vyberte kampaň");
+      return;
+    }
+
     setUploading(true);
     setResult(null);
     setError(null);
@@ -24,6 +33,7 @@ export function CsvUpload() {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("campaignId", campaignId);
 
       const res = await fetch("/api/contacts/upload", {
         method: "POST",
@@ -52,7 +62,7 @@ export function CsvUpload() {
           type="file"
           accept=".csv"
           onChange={handleUpload}
-          disabled={uploading}
+          disabled={uploading || !campaignId}
           className="hidden"
         />
       </label>

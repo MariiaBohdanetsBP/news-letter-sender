@@ -30,9 +30,12 @@ export async function PUT(
 
   if (ecomailKey && ecomailListId && decisions.length > 0) {
     try {
-      // Look up real emails from uploaded contacts
+      // Look up real emails from uploaded contacts for this campaign
       const contacts = await prisma.contact.findMany({
-        where: { companyId: { in: decisions.map((d) => d.companyId) } },
+        where: {
+          campaignId: id,
+          companyId: { in: decisions.map((d) => d.companyId) },
+        },
       });
       const emailsByCompany = new Map<string, { email: string; name: string }[]>();
       for (const c of contacts) {

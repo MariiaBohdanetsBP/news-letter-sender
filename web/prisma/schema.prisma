@@ -33,6 +33,7 @@ model Campaign {
 
   decisions CompanyDecision[]
   auditLogs AuditLog[]
+  contacts  Contact[]
 
   @@map("campaigns")
 }
@@ -67,13 +68,16 @@ model AuditLog {
 
 model Contact {
   id          String   @id @default(uuid())
+  campaignId  String   @map("campaign_id")
   companyId   String   @map("company_id")
   companyName String   @map("company_name")
   email       String
   contactName String?  @map("contact_name")
   uploadedAt  DateTime @default(now()) @map("uploaded_at")
 
-  @@unique([companyId, email])
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, companyId, email])
   @@map("contacts")
 }
 

@@ -7,9 +7,10 @@ import { CsvUpload } from "./csv-upload";
 
 interface HeaderProps {
   onSend?: () => void;
+  campaignId?: string;
 }
 
-export function Header({ onSend }: HeaderProps) {
+export function Header({ onSend, campaignId }: HeaderProps) {
   const { user, isAdmin, logout } = useAuth();
 
   return (
@@ -19,7 +20,7 @@ export function Header({ onSend }: HeaderProps) {
       </h1>
 
       <div className="flex items-center gap-3">
-        {isAdmin && <CsvUpload />}
+        {isAdmin && <CsvUpload campaignId={campaignId} />}
 
         {isAdmin && (
           <button

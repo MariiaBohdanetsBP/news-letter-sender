@@ -249,7 +249,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-screen flex-col">
-      <Header />
+      <Header campaignId={activeCampaignId ?? undefined} />
 
       {error && (
         <div className="border-b border-danger/20 bg-danger/5 px-6 py-2 text-sm text-danger">
