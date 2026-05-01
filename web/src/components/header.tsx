@@ -1,8 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { Zap, LogOut } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { LogOut } from "lucide-react";
 import { CsvUpload } from "./csv-upload";
 
 interface HeaderProps {
@@ -20,20 +19,7 @@ export function Header({ onSend, campaignId }: HeaderProps) {
       </h1>
 
       <div className="flex items-center gap-3">
-        {isAdmin && <CsvUpload campaignId={campaignId} />}
-
-        {isAdmin && (
-          <button
-            onClick={onSend}
-            className={cn(
-              "flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white",
-              "transition-colors hover:bg-primary-hover",
-            )}
-          >
-            <Zap className="h-4 w-4" />
-            Odeslat
-          </button>
-        )}
+        {isAdmin && <CsvUpload campaignId={campaignId} onSend={onSend} />}
 
         <span className="text-sm text-white/70">
           {user?.displayName}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { X, CheckCircle, XCircle, Loader2, Upload, Zap } from "lucide-react";
 
 interface CompanySummary {
   name: string;
@@ -16,12 +17,14 @@ interface UploadResult {
 
 interface CsvUploadProps {
   campaignId?: string;
+  onSend?: () => void;
 }
 
-export function CsvUpload({ campaignId }: CsvUploadProps) {
+export function CsvUpload({ campaignId, onSend }: CsvUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState<UploadResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -32,6 +35,7 @@ export function CsvUpload({ campaignId }: CsvUploadProps) {
       return;
     }
 
+    setModalOpen(true);
     setUploading(true);
     setResult(null);
     setError(null);
@@ -62,10 +66,23 @@ export function CsvUpload({ campaignId }: CsvUploadProps) {
     }
   }
 
+  function handleClose() {
+    setModalOpen(false);
+    setResult(null);
+    setError(null);
+  }
+
+  function handleSend() {
+    setModalOpen(false);
+    setResult(null);
+    onSend?.();
+  }
+
   return (
-    <div className="flex items-center gap-3">
-      <label className="cursor-pointer px-3 py-1.5 text-xs bg-zinc-700 hover:bg-zinc-600 text-zinc-200 rounded transition-colors">
-        {uploading ? "Nahrávám..." : "📄 Nahrát CSV kontakty"}
+    <>
+      <label className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-700 hover:bg-zinc-600 text-zinc-200 rounded transition-colors">
+        <Upload className="h-3.5 w-3.5" />
+        {uploading ? "Nahrávám..." : "Nahrát CSV kontakty"}
         <input
           type="file"
           accept=".csv,.xlsx,.xls"
@@ -74,24 +91,97 @@ export function CsvUpload({ campaignId }: CsvUploadProps) {
           className="hidden"
         />
       </label>
-      {result && (
-        <div className="text-xs">
-          <span className="text-green-400">
-            ✓ {result.imported} kontaktů nahráno
-            {result.errors > 0 && ` (${result.errors} chyb)`}
-          </span>
-          {result.companySummary && result.companySummary.length > 0 && (
-            <div className="mt-1 max-h-32 overflow-y-auto text-zinc-400 space-y-0.5">
-              {result.companySummary.map((c) => (
-                <div key={c.name}>
-                  {c.name}: <span className="text-zinc-200">{c.count} příjemců</span>
-                </div>
-              ))}
+
+      {/* Upload Results Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl bg-zinc-900 border border-zinc-700 shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-zinc-700 px-5 py-4">
+              <h3 className="text-sm font-semibold text-white">Výsledky nahrání</h3>
+              <button onClick={handleClose} className="text-zinc-400 hover:text-white">
+                <X className="h-4 w-4" />
+              </button>
             </div>
-          )}
+
+            {/* Content */}
+            <div className="px-5 py-4">
+              {uploading && (
+                <div className="flex flex-col items-center gap-3 py-8">
+                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                  <span className="text-sm text-zinc-400">Zpracovávám soubor…</span>
+                </div>
+              )}
+
+              {error && !uploading && (
+                <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3">
+                  <XCircle className="h-5 w-5 text-red-400 shrink-0" />
+                  <span className="text-sm text-red-300">{error}</span>
+                </div>
+              )}
+
+              {result && !uploading && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-zinc-300">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span>Celkem nahráno: <strong className="text-white">{result.imported}</strong> kontaktů</span>
+                  </div>
+
+                  {result.companySummary && result.companySummary.length > 0 && (
+                    <div className="max-h-56 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-800/50">
+                      {result.companySummary.map((c) => (
+                        <div
+                          key={c.name}
+                          className="flex items-center justify-between px-4 py-2 border-b border-zinc-700/50 last:border-0"
+                        >
+                          <span className="text-sm text-zinc-300 truncate mr-3">{c.name}</span>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {c.count > 0 ? (
+                              <CheckCircle className="h-3.5 w-3.5 text-green-400" />
+                            ) : (
+                              <XCircle className="h-3.5 w-3.5 text-red-400" />
+                            )}
+                            <span className={`text-xs font-medium ${c.count > 0 ? "text-green-400" : "text-red-400"}`}>
+                              {c.count} příjemců
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {result.errors > 0 && (
+                    <div className="text-xs text-zinc-500">
+                      ⚠️ {result.errors} řádků přeskočeno (chybný formát)
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Footer buttons */}
+            {!uploading && (result || error) && (
+              <div className="flex items-center justify-end gap-3 border-t border-zinc-700 px-5 py-3">
+                <button
+                  onClick={handleClose}
+                  className="rounded-lg px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+                >
+                  Zrušit
+                </button>
+                {result && result.imported > 0 && (
+                  <button
+                    onClick={handleSend}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+                  >
+                    <Zap className="h-4 w-4" />
+                    Odeslat
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
-      {error && <span className="text-xs text-red-400">✗ {error}</span>}
-    </div>
+    </>
   );
 }
