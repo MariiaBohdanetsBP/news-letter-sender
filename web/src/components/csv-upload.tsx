@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { X, CheckCircle, XCircle, Loader2, Upload, Zap } from "lucide-react";
+import { X, CheckCircle, XCircle, Loader2, Upload, RefreshCw } from "lucide-react";
+import { sendCampaign } from "@/lib/api";
 
 interface CompanySummary {
   name: string;
@@ -22,9 +23,11 @@ interface CsvUploadProps {
 
 export function CsvUpload({ campaignId, onSend }: CsvUploadProps) {
   const [uploading, setUploading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [result, setResult] = useState<UploadResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [syncResult, setSyncResult] = useState<{ status: string; message: string } | null>(null);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -70,12 +73,28 @@ export function CsvUpload({ campaignId, onSend }: CsvUploadProps) {
     setModalOpen(false);
     setResult(null);
     setError(null);
+    setSyncResult(null);
   }
 
-  function handleSend() {
-    setModalOpen(false);
-    setResult(null);
-    onSend?.();
+  async function handleSend() {
+    if (!campaignId) return;
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const sent = await sendCampaign(campaignId);
+      const eco = (sent as unknown as Record<string, unknown>).ecomail as { status: string; message: string } | undefined;
+      if (eco) {
+        setSyncResult(eco);
+      } else {
+        setSyncResult({ status: "sent", message: "Kampaň označena jako odeslaná" });
+      }
+      // Notify parent to refresh state
+      onSend?.();
+    } catch (err) {
+      setSyncResult({ status: "error", message: err instanceof Error ? err.message : "Chyba při odesílání" });
+    } finally {
+      setSyncing(false);
+    }
   }
 
   return (
@@ -159,6 +178,27 @@ export function CsvUpload({ campaignId, onSend }: CsvUploadProps) {
               )}
             </div>
 
+            {/* Sync result feedback */}
+            {syncResult && (
+              <div className={`mx-5 mb-3 flex items-center gap-2 rounded-lg px-4 py-3 ${
+                syncResult.status === "sent" ? "bg-green-500/10 border border-green-500/20" :
+                syncResult.status === "skipped" ? "bg-yellow-500/10 border border-yellow-500/20" :
+                "bg-red-500/10 border border-red-500/20"
+              }`}>
+                {syncResult.status === "sent" ? (
+                  <CheckCircle className="h-5 w-5 text-green-400 shrink-0" />
+                ) : syncResult.status === "skipped" ? (
+                  <XCircle className="h-5 w-5 text-yellow-400 shrink-0" />
+                ) : (
+                  <XCircle className="h-5 w-5 text-red-400 shrink-0" />
+                )}
+                <span className={`text-sm ${
+                  syncResult.status === "sent" ? "text-green-300" :
+                  syncResult.status === "skipped" ? "text-yellow-300" : "text-red-300"
+                }`}>{syncResult.message}</span>
+              </div>
+            )}
+
             {/* Footer buttons */}
             {!uploading && (result || error) && (
               <div className="flex items-center justify-end gap-3 border-t border-zinc-700 px-5 py-3">
@@ -166,15 +206,20 @@ export function CsvUpload({ campaignId, onSend }: CsvUploadProps) {
                   onClick={handleClose}
                   className="rounded-lg px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
                 >
-                  Zrušit
+                  {syncResult ? "Zavřít" : "Zrušit"}
                 </button>
-                {result && result.imported > 0 && (
+                {result && result.imported > 0 && !syncResult && (
                   <button
                     onClick={handleSend}
-                    className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+                    disabled={syncing}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
                   >
-                    <Zap className="h-4 w-4" />
-                    Aktualizovat seznam kontaktů
+                    {syncing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4" />
+                    )}
+                    {syncing ? "Odesílám…" : "Aktualizovat seznam kontaktů"}
                   </button>
                 )}
               </div>
