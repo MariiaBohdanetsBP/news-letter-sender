@@ -20,9 +20,9 @@ const MOCK_COMPANIES: RaynetCompany[] = [
 ];
 
 async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: "raynet" | "mock" }> {
-  const apiUser = process.env.RAYNET_API_USER;
-  const apiKey = process.env.RAYNET_API_KEY;
-  const instanceName = process.env.RAYNET_INSTANCE_NAME;
+    const apiUser = process.env.RAYNET_API_USER?.trim();
+  const apiKey = process.env.RAYNET_API_KEY?.trim();
+  const instanceName = process.env.RAYNET_INSTANCE_NAME?.trim();
 
   if (!apiUser || !apiKey || !instanceName) {
     return { companies: MOCK_COMPANIES, source: "mock" };
@@ -33,7 +33,7 @@ async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: 
   const limit = 200; // Raynet max per request
 
   // Raynet Basic auth: "user@email.cz:apiToken"
-  const credentials = btoa(`${apiUser}:${apiKey}`);
+  const credentials = Buffer.from(`${apiUser}:${apiKey}`).toString("base64");
 
   // Fetch companies (Raynet max limit is 200 per request)
   const res = await fetch(
@@ -79,9 +79,10 @@ export async function GET() {
       headers: { "X-Data-Source": source },
     });
   } catch (error) {
-    console.error("Raynet fetch failed, using mock:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Raynet fetch failed, using mock:", msg);
     return NextResponse.json(MOCK_COMPANIES, {
-      headers: { "X-Data-Source": "mock-fallback" },
+      headers: { "X-Data-Source": "mock-fallback", "X-Error": msg.slice(0, 200) },
     });
   }
 }
