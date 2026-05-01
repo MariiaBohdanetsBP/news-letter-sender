@@ -13,9 +13,7 @@ export async function PUT(
   const { id } = await params;
   const campaign = await prisma.campaign.findUnique({ where: { id } });
   if (!campaign) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (campaign.status === "Sent") {
-    return NextResponse.json({ error: "Already sent" }, { status: 409 });
-  }
+  // Allow re-syncing contacts even if already sent
 
   // Get selected companies for Ecomail sync
   const decisions = await prisma.companyDecision.findMany({
