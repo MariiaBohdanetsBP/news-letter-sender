@@ -1,8 +1,5 @@
 import type { Campaign, CompanyDecision, LoginResponse, RaynetCompany } from "@/types";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("token");
@@ -21,7 +18,7 @@ async function request<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const res = await fetch(path, { ...options, headers });
 
   if (res.status === 401) {
     if (typeof window !== "undefined") {

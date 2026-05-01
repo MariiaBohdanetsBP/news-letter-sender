@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  displayName  String   @map("display_name")
+  role         UserRole @default(AccountManager)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+model Campaign {
+  id        String         @id @default(uuid())
+  name      String
+  status    CampaignStatus @default(Processed)
+  planDate  DateTime?      @map("plan_date") @db.Date
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  decisions CompanyDecision[]
+  auditLogs AuditLog[]
+
+  @@map("campaigns")
+}
+
+model CompanyDecision {
+  id          String   @id @default(uuid())
+  campaignId  String   @map("campaign_id")
+  companyId   String   @map("company_id")
+  companyName String   @map("company_name")
+  selected    Boolean  @default(false)
+  decidedBy   String   @map("decided_by")
+  decidedAt   DateTime @default(now()) @map("decided_at")
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, companyId])
+  @@map("company_decisions")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  campaignId String   @map("campaign_id")
+  action     String
+  performedBy String  @map("performed_by")
+  details    String?
+  timestamp  DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+enum UserRole {
+  Admin
+  AccountManager
+}
+
+enum CampaignStatus {
+  Processed
+  Sent
+}
