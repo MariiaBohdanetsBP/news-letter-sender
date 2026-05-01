@@ -65,6 +65,18 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+model Contact {
+  id          String   @id @default(uuid())
+  companyId   String   @map("company_id")
+  companyName String   @map("company_name")
+  email       String
+  contactName String?  @map("contact_name")
+  uploadedAt  DateTime @default(now()) @map("uploaded_at")
+
+  @@unique([companyId, email])
+  @@map("contacts")
+}
+
 enum UserRole {
   Admin
   AccountManager

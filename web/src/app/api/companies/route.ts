@@ -29,46 +29,52 @@ async function fetchFromRaynet(): Promise<{ companies: RaynetCompany[]; source: 
   }
 
   const companies: RaynetCompany[] = [];
-  let offset = 0;
   const limit = 200; // Raynet max per request
+  const excludedOwners = new Set(["Import Import", "RAYNET CRM"]);
 
   // Raynet Basic auth: "user@email.cz:apiToken"
   const credentials = Buffer.from(`${apiUser}:${apiKey}`).toString("base64");
 
-  // Fetch companies (Raynet max limit is 200 per request)
-  const res = await fetch(
-    `https://app.raynet.cz/api/v2/company/?offset=${offset}&limit=${limit}`,
-    {
-      headers: {
-        Authorization: `Basic ${credentials}`,
-        "X-Instance-Name": instanceName,
-        Accept: "application/json",
-      },
-      next: { revalidate: 300 },
-    }
-  );
+  // Paginate through all companies
+  let offset = 0;
+  let totalCount = Infinity;
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Raynet API ${res.status}: ${text.slice(0, 200)}`);
-  }
-  const json = await res.json();
+  while (offset < totalCount) {
+    const res = await fetch(
+      `https://app.raynet.cz/api/v2/company/?offset=${offset}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Basic ${credentials}`,
+          "X-Instance-Name": instanceName,
+          Accept: "application/json",
+        },
+        next: { revalidate: 300 },
+      }
+    );
 
-  if (json.data?.length) {
-    // Only include actual clients (B_ACTUAL) with real owners
-    const excludedOwners = new Set(["Import Import", "RAYNET CRM"]);
-    for (const c of json.data) {
-      if (c.state !== "B_ACTUAL") continue;
-      const ownerName = c.owner?.fullName ?? "";
-      if (excludedOwners.has(ownerName)) continue;
-      companies.push({
-        companyId: String(c.id),
-        companyName: c.name ?? `Company #${c.id}`,
-        accountManager: c.owner?.fullName ?? "Nepřiřazeno",
-        systemType: c.category?.value?.includes("BP1") ? "BP1" : "Muza",
-        category: c.category?.value ?? null,
-      });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`Raynet API ${res.status}: ${text.slice(0, 200)}`);
     }
+    const json = await res.json();
+    totalCount = json.totalCount ?? 0;
+
+    if (json.data?.length) {
+      for (const c of json.data) {
+        if (c.state !== "B_ACTUAL") continue;
+        const ownerName = c.owner?.fullName ?? "";
+        if (excludedOwners.has(ownerName)) continue;
+        companies.push({
+          companyId: String(c.id),
+          companyName: c.name ?? `Company #${c.id}`,
+          accountManager: c.owner?.fullName ?? "Nepřiřazeno",
+          systemType: c.category?.value?.includes("BP1") ? "BP1" : "Muza",
+          category: c.category?.value ?? null,
+        });
+      }
+    }
+
+    offset += limit;
   }
 
   return { companies, source: "raynet" };

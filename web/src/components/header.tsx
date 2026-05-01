@@ -3,6 +3,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { Zap, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CsvUpload } from "./csv-upload";
 
 interface HeaderProps {
   onSend?: () => void;
@@ -18,6 +19,8 @@ export function Header({ onSend }: HeaderProps) {
       </h1>
 
       <div className="flex items-center gap-3">
+        {isAdmin && <CsvUpload />}
+
         {isAdmin && (
           <button
             onClick={onSend}

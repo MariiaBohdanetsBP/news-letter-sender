@@ -30,13 +30,35 @@ export async function PUT(
 
   if (ecomailKey && ecomailListId && decisions.length > 0) {
     try {
-      // Add selected companies as subscribers (update_existing handles duplicates)
-      const subscriberData = decisions.map((d) => ({
-        email: `kontakt@${d.companyName.toLowerCase().replace(/[^a-z0-9]/g, "")}.cz`,
-        name: d.companyName,
-        status: "subscribed",
-      }));
+      // Look up real emails from uploaded contacts
+      const contacts = await prisma.contact.findMany({
+        where: { companyId: { in: decisions.map((d) => d.companyId) } },
+      });
+      const emailsByCompany = new Map<string, { email: string; name: string }[]>();
+      for (const c of contacts) {
+        const list = emailsByCompany.get(c.companyId) ?? [];
+        list.push({ email: c.email, name: c.contactName ?? c.companyName });
+        emailsByCompany.set(c.companyId, list);
+      }
 
+      // Build subscriber list: use real emails if available, fallback to generated
+      const subscriberData: { email: string; name: string; status: string }[] = [];
+      for (const d of decisions) {
+        const real = emailsByCompany.get(d.companyId);
+        if (real?.length) {
+          for (const r of real) {
+            subscriberData.push({ email: r.email, name: r.name, status: "subscribed" });
+          }
+        } else {
+          subscriberData.push({
+            email: `kontakt@${d.companyName.toLowerCase().replace(/[^a-z0-9]/g, "")}.cz`,
+            name: d.companyName,
+            status: "subscribed",
+          });
+        }
+      }
+
+      // Add selected companies as subscribers (update_existing handles duplicates)
       const ecoRes = await fetch(`https://api2.ecomailapp.cz/lists/${ecomailListId}/subscribe-bulk`, {
         method: "POST",
         headers: { "Content-Type": "application/json", key: ecomailKey },
